@@ -3,7 +3,39 @@
 <head>
 <meta charset="utf-8">
 <title>FTC OpMode Sim web - CheerpJ spike</title>
-<script>window.T0 = performance.now();</script>
+<script>
+window.T0 = performance.now();
+// Count bytes per host for every fetch/XHR (cross-origin Resource Timing hides sizes).
+window.NET = {};
+(function () {
+  const add = (url, n) => {
+    try {
+      const h = new URL(url, location.href).host;
+      const e = (window.NET[h] = window.NET[h] || { requests: 0, bytes: 0 });
+      e.requests++; e.bytes += n;
+    } catch (_) {}
+  };
+  const f = window.fetch;
+  window.fetch = async function (input, init) {
+    const r = await f.apply(this, arguments);
+    const url = typeof input === "string" ? input : input.url;
+    r.clone().arrayBuffer().then((b) => add(url, b.byteLength), () => add(url, 0));
+    return r;
+  };
+  const open = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (m, url) {
+    this.addEventListener("loadend", () => {
+      let n = 0;
+      try {
+        const r = this.response;
+        n = r == null ? 0 : r.byteLength != null ? r.byteLength : r.size != null ? r.size : String(r).length;
+      } catch (_) {}
+      add(url, n);
+    });
+    return open.apply(this, arguments);
+  };
+})();
+</script>
 <script src="https://cjrtnc.leaningtech.com/5.0/loader.js"></script>
 </head>
 <body>
@@ -65,11 +97,24 @@ const params = new URLSearchParams(location.search);
 
 // Paths: CheerpJ maps /app/ to this server's root.
 const base = location.pathname.replace(/[^/]*$/, ""); // e.g. /spike/
-const CP = "/app" + base + "sim.jar:/app" + base + "tools.jar";
+const JAVA = Number(params.get("java") || 17); // 17: CheerpJ's runtime includes javac. 8: needs tools.jar and fails (see Status)
+// Java 8 runtime has no javac: add the JDK 8 tools.jar. Java 11+ runtimes include jdk.compiler.
+const CP = "/app" + base + "sim.jar" + (JAVA === 8 ? ":/app" + base + "tools.jar" : "");
+
+// CheerpJ library mode allows one Java call at a time from JS: queue them all.
+let jq = Promise.resolve();
+let jbusy = 0;
+function J(fn) {
+  jbusy++;
+  const p = jq.then(fn);
+  jq = p.catch(() => {}).then(() => { jbusy--; });
+  return p;
+}
 const timing = { cdnLoaderMs: null };
 let Bridge = null;
 let lib = null;
 let snap = null;
+let snapSeq = 0; // increments on every fresh snapshot
 let fileName = "FourMotorTest.java";
 let builtName = null;
 let buildCount = 0;
@@ -158,7 +203,7 @@ async function loadPick(key) {
 // ---------- build ----------
 async function build() {
   const t0 = performance.now();
-  const r = JSON.parse(await Bridge.build(fileName, $("src").value));
+  const r = JSON.parse(await J(() => Bridge.build(fileName, $("src").value)));
   const ms = Math.round(performance.now() - t0);
   buildCount++;
   if (buildCount === 1) timing.firstCompileMs = ms;
@@ -191,9 +236,9 @@ function dsButtonLabel() {
 }
 async function dsPress() {
   const l = dsButtonLabel();
-  if (l === "INIT") await Bridge.init();
-  else if (l === "PLAY") await Bridge.play();
-  else await Bridge.stop();
+  if (l === "INIT") await J(() => Bridge.init());
+  else if (l === "PLAY") await J(() => Bridge.play());
+  else await J(() => Bridge.stop());
 }
 
 // ---------- frame loop: draw every frame, poll Java when free ----------
@@ -204,11 +249,12 @@ let snapLatency = [];
 let angle = 0, lastFrame = performance.now(), worstGap = 0;
 
 async function pollJava() {
-  if (!Bridge || pending) return;
+  if (!Bridge || pending || jbusy > 0) return;
   pending = true;
   const t0 = performance.now();
   try {
-    snap = JSON.parse(await Bridge.snapshot());
+    snap = JSON.parse(await J(() => Bridge.snapshot()));
+    snapSeq++;
     snapLatency.push(performance.now() - t0);
     if (snapLatency.length > 120) snapLatency.shift();
     for (const e of snap.events) log("event: " + e);
@@ -272,8 +318,9 @@ function check(name, ok, detail) {
 }
 async function waitFor(pred, timeoutMs) {
   const t0 = performance.now();
+  const seq0 = snapSeq + 1; // ignore a snapshot that may have been in flight
   while (performance.now() - t0 < timeoutMs) {
-    if (snap && pred(snap)) return performance.now() - t0;
+    if (snap && snapSeq > seq0 && pred(snap)) return performance.now() - t0;
     await sleepMs(20);
   }
   return -1;
@@ -296,33 +343,36 @@ async function runAll() {
   // 1. FourMotorTest unedited
   let r = await buildKey("FourMotorTest");
   check("FourMotorTest compiles", r.ok && r.name === "4 Motor Test Routine", "name " + r.name + ", " + timing.lastCompileMs + " ms");
-  await Bridge.init();
+  await J(() => Bridge.init());
   let t = await waitFor((s) => s.state === "INIT" && s.telemetry.includes("FTC MOTOR DIAGNOSTIC"), 5000);
   check("INIT shows telemetry", t >= 0, Math.round(t) + " ms");
   await sleepMs(1500);
   check("waitForStart blocks until PLAY", snap.state === "INIT" && snap.motors.every((m) => m.power === 0));
   const encBefore = snap.motors.map((m) => m.enc);
   const f0 = fpsLog.length;
-  await Bridge.play();
+  await J(() => Bridge.play());
   t = await waitFor((s) => s.state === "RUNNING" && s.telemetry.includes("MOTOR TEST IN PROGRESS"), 3000);
   check("PLAY starts the loop", t >= 0, Math.round(t) + " ms");
   await sleepMs(1000);
   check("FL spins backward at +0.25 (left side, no REVERSE)", snap.motors[0].power === 0.25 && snap.motors[0].spin === -0.25);
-  t = await waitFor((s) => s.state === "STOPPED", 40000);
+  t = await waitFor((s) => s.telemetry.includes("MOTOR TEST COMPLETE!"), 45000);
   const encDelta = snap.motors.map((m, i) => m.enc - encBefore[i]);
-  check("FourMotorTest runs to the end", t >= 0 && !snap.error, "ended after ~" + Math.round((t + 2000) / 1000) + " s");
+  check("FourMotorTest runs to the end (MOTOR TEST COMPLETE!)", t >= 0 && !snap.error, "after ~" + Math.round((t + 1000) / 1000) + " s from PLAY");
+  await J(() => Bridge.stop());
+  t = await waitFor((s) => s.state === "STOPPED", 3000);
+  check("FourMotorTest STOP after complete", t >= 0 && !snap.error, Math.round(t) + " ms");
   check("encoders ~2500 each (0.25 x 5 s x 2000)", encDelta.every((d) => Math.abs(d - 2500) < 150), encDelta.join(", "));
   check("page redraw during run", true, fpsDuring(f0));
 
   // 2. second compile + STOP timing
   r = await buildKey("StopTest");
   check("second compile", r.ok, timing.lastCompileMs + " ms");
-  await Bridge.init(); await waitFor((s) => s.state === "INIT", 3000);
-  await Bridge.play(); await waitFor((s) => s.state === "RUNNING", 3000);
+  await J(() => Bridge.init()); await waitFor((s) => s.state === "INIT", 3000);
+  await J(() => Bridge.play()); await waitFor((s) => s.state === "RUNNING", 3000);
   await sleepMs(1500);
   const loops = snap.telemetry.join(" ");
   const t1 = performance.now();
-  await Bridge.stop();
+  await J(() => Bridge.stop());
   t = await waitFor((s) => s.state === "STOPPED", 6000);
   check("STOP ends OpMode within 1 s", t >= 0 && performance.now() - t1 < 1000, Math.round(performance.now() - t1) + " ms; before STOP: " + loops);
   check("motors zero after STOP", snap.motors.every((m) => m.power === 0));
@@ -335,8 +385,8 @@ async function runAll() {
 
   // 4. MirrorTest
   r = await buildKey("MirrorTest");
-  await Bridge.init(); await waitFor((s) => s.state === "INIT", 3000);
-  await Bridge.play();
+  await J(() => Bridge.init()); await waitFor((s) => s.state === "INIT", 3000);
+  await J(() => Bridge.play());
   await waitFor((s) => s.telemetry.includes("Phase 1: no REVERSE"), 3000);
   await sleepMs(300);
   const p1 = snap.motors.map((m) => m.spin);
@@ -345,11 +395,11 @@ async function runAll() {
   const p2 = snap.motors.map((m) => m.spin);
   check("MirrorTest phase 1: left back, right forward", p1.join() === "-0.5,0.5,-0.5,0.5", p1.join(", "));
   check("MirrorTest phase 2: all forward", p2.join() === "0.5,0.5,0.5,0.5", p2.join(", ") + "; " + snap.telemetry.join(" / "));
-  await Bridge.stop(); await waitFor((s) => s.state === "STOPPED", 3000);
+  await J(() => Bridge.stop()); await waitFor((s) => s.state === "STOPPED", 3000);
 
   // 5. BadNameTest
   r = await buildKey("BadNameTest");
-  await Bridge.init();
+  await J(() => Bridge.init());
   t = await waitFor((s) => s.state === "STOPPED", 3000);
   const want = 'User code threw an uncaught exception: IllegalArgumentException - Unable to find a hardware device with name "frontLeftt" and type DcMotor';
   check("BadNameTest: error text + OpMode stops", t >= 0 && snap.error === want, "Error: " + snap.error);
@@ -361,13 +411,13 @@ async function runAll() {
 
 async function runStuck(key) {
   const r = await buildKey(key);
-  await Bridge.init(); await waitFor((s) => s.state === "INIT", 3000);
+  await J(() => Bridge.init()); await waitFor((s) => s.state === "INIT", 3000);
   const f0 = fpsLog.length;
-  await Bridge.play();
+  await J(() => Bridge.play());
   await sleepMs(3000);
   log(key + ": 3 s after PLAY: " + fpsDuring(f0));
   const t1 = performance.now();
-  await Bridge.stop();
+  await J(() => Bridge.stop());
   const t = await waitFor((s) => s.error && s.error.indexOf("stuck") >= 0, 15000);
   check(key + ": stuck message after ~5 s", t >= 0, Math.round(performance.now() - t1) + " ms; " + (snap.error || ""));
   check(key + ": motors zeroed", snap.motors.every((m) => m.power === 0));
@@ -375,7 +425,7 @@ async function runStuck(key) {
   await sleepMs(500);
   // can a new OpMode still run while the stuck thread lives?
   await buildKey("MirrorTest");
-  await Bridge.init();
+  await J(() => Bridge.init());
   await sleepMs(1000);
   log(key + ": INIT another OpMode afterwards -> state " + snap.state + ", events above");
 }
@@ -408,13 +458,15 @@ function showTiming() {
     "domains:",
   ];
   for (const [h, v] of Object.entries(hosts)) out.push("  " + h + "  requests " + v.n + ", transferred " + mb(v.transfer) + ", body " + mb(v.body));
+  out.push("fetch/XHR bytes received by the page (includes CheerpJ's runtime downloads; cached responses count too):");
+  for (const [h, v] of Object.entries(window.NET)) out.push("  " + h + "  requests " + v.requests + ", " + mb(v.bytes));
   $("timing").textContent = out.join("\n");
 }
 
 // ---------- start ----------
 async function start() {
   timing.cdnLoaderMs = Math.round(performance.now() - window.T0);
-  const ver = Number(params.get("java") || 8);
+  const ver = JAVA;
   const opts = { version: ver, status: "none" };
   if (params.get("javahome")) opts.javaProperties = ["java.home=" + params.get("javahome")];
   await cheerpjInit(opts);
@@ -441,7 +493,7 @@ async function start() {
 $("loadBtn").onclick = () => loadPick($("pick").value);
 $("build").onclick = () => build();
 $("ds").onclick = () => dsPress();
-$("stop").onclick = () => Bridge.stop();
+$("stop").onclick = () => J(() => Bridge.stop());
 $("auto").onclick = () => runAll();
 $("autoStuck").onclick = () => runStuck(params.get("stuck") || "Stuck");
 window.addEventListener("error", (e) => log("JS error: " + e.message));
