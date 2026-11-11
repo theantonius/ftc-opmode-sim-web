@@ -64,7 +64,7 @@ window.NET = {};
   <button id="ds" disabled>INIT</button>
   <button id="stop" disabled>STOP</button>
   <button id="auto" disabled>Run all checks</button>
-  <button id="autoStuck" disabled>Run stuck check (may freeze the tab)</button>
+  <button id="autoStuck" disabled>Run stuck check</button>
 </p>
 
 <h2>Messages</h2>
@@ -418,16 +418,17 @@ async function runStuck(key) {
   log(key + ": 3 s after PLAY: " + fpsDuring(f0));
   const t1 = performance.now();
   await J(() => Bridge.stop());
-  const t = await waitFor((s) => s.error && s.error.indexOf("stuck") >= 0, 15000);
+  let t = await waitFor((s) => s.error && s.error.indexOf("stuck") >= 0, 15000);
   check(key + ": stuck message after ~5 s", t >= 0, Math.round(performance.now() - t1) + " ms; " + (snap.error || ""));
   check(key + ": motors zeroed", snap.motors.every((m) => m.power === 0));
   check(key + ": page while stuck", true, fpsDuring(f0));
-  await sleepMs(500);
-  // can a new OpMode still run while the stuck thread lives?
+  t = await waitFor((s) => s.state === "STOPPED", 3000);
+  check(key + ": sim ends the stuck OpMode after the message", t >= 0, "state " + snap.state);
   await buildKey("MirrorTest");
   await J(() => Bridge.init());
-  await sleepMs(1000);
-  log(key + ": INIT another OpMode afterwards -> state " + snap.state + ", events above");
+  t = await waitFor((s) => s.state === "INIT", 3000);
+  check(key + ": next OpMode can INIT", t >= 0, "state " + snap.state);
+  await J(() => Bridge.stop());
 }
 
 // ---------- timing / network ----------

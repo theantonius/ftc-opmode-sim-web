@@ -28,7 +28,11 @@ public final class WebBridge {
   /** Compiles and loads. Returns JSON: {ok, name, kind, ms, problems:[{line, column, message}]}. */
   public static String build(String fileName, String source) {
     long t0 = System.currentTimeMillis();
-    OpModeCompiler.Result r = SIM.build(fileName, source);
+    // Compile with loop yields (so busy loops can't freeze the tab). If that
+    // fails, compile the student's own text so errors are exactly javac's.
+    String withYields = LoopInstrumenter.instrument(fileName, source);
+    OpModeCompiler.Result r = withYields != null ? SIM.build(fileName, withYields) : null;
+    if (r == null || !r.ok) r = SIM.build(fileName, source);
     long ms = System.currentTimeMillis() - t0;
     StringBuilder sb = new StringBuilder("{\"ok\":").append(r.ok);
     sb.append(",\"name\":").append(str(r.opModeName));
