@@ -1,0 +1,14 @@
+# Private notes (never pushed)
+claude-notes/
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
+# macOS
+.DS_Store
+
+# Build output
+build/
+
+# JDK 8 tools.jar (javac) for the spike: 18 MB, licence not cleared. Get it with tools/get-tools-jar.sh
+spike/tools.jar
