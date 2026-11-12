@@ -2,7 +2,7 @@
 """Local test server with HTTP Range support (CheerpJ needs it; python -m http.server has none).
 
 Usage: python3 tools/serve.py [port]   (serves the repo root; default port 8080)
-Then open http://localhost:8080/spike/
+Then open http://localhost:8080/web/  (the Step 1 spike is at /spike/)
 """
 import os
 import re
@@ -49,5 +49,5 @@ class RangeHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
-    print(f"Serving {os.path.abspath(ROOT)} at http://localhost:{port}/spike/")
+    print(f"Serving {os.path.abspath(ROOT)} at http://localhost:{port}/web/")
     ThreadingHTTPServer(("127.0.0.1", port), RangeHandler).serve_forever()

@@ -1,0 +1,114 @@
+/* FTC OpMode Sim (web). Layout 1280 x 720, scaled to fit the window by main.js. */
+
+@font-face { font-family: Inter; font-weight: 400; src: url(../assets/fonts/Inter-Regular.ttf) format("truetype"); }
+@font-face { font-family: Inter; font-weight: 600; src: url(../assets/fonts/Inter-SemiBold.ttf) format("truetype"); }
+@font-face { font-family: Inter; font-weight: 700; src: url(../assets/fonts/Inter-Bold.ttf) format("truetype"); }
+@font-face { font-family: "Roboto Mono"; font-weight: 400; src: url(../assets/fonts/RobotoMono-Regular.ttf) format("truetype"); }
+
+:root {
+  --red: #C62828;
+  --red-dark: #B71C1C;
+  --red-light-text: #FFCDD2;
+  --pane-bg: #F3F3F3;
+  --divider: #D0D0D0;
+  --label-gray: #666666;
+  --text: #333333;
+  --text-dark: #1A1A1A;
+  --selected: #DCE6F5;
+  --tabs-bg: #ECECEC;
+  --gutter-bg: #F7F7F7;
+  --line-num: #9E9E9E;
+  --code: #1F1F1F;
+  --messages-bg: #FAFAFA;
+  --success: #2E7D32;
+  --error-line-bg: #FDE0E0;
+  --page-bg: #111317;
+}
+
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--page-bg); }
+body { font-family: Inter, sans-serif; }
+
+#stage {
+  position: absolute; left: 0; top: 0;
+  width: 1280px; height: 720px;
+  transform-origin: 0 0;
+  background: #fff;
+}
+
+/* ------------------------------------------------------------ editor */
+
+#editor { position: absolute; left: 0; top: 0; width: 680px; height: 720px; background: #fff; color: var(--text); }
+#editor * { box-sizing: border-box; }
+.abs, .topbar, .files, .tabs, .code, .messages { position: absolute; }
+
+.topbar { left: 0; top: 0; width: 680px; height: 36px; background: var(--red); }
+.topbar .blocks { position: absolute; left: 14px; top: 10px; font: 600 13px Inter; color: var(--red-light-text); }
+.topbar .tab-onbot {
+  position: absolute; left: 70px; top: 0; width: 96px; height: 36px; background: var(--red-dark);
+  font: 700 13px Inter; color: #fff; padding: 10px 0 0 12px;
+}
+
+.files { left: 0; top: 36px; width: 150px; height: 684px; background: var(--pane-bg); border-right: 1px solid var(--divider); }
+.files .toolbar { position: absolute; left: 0; top: 0; width: 149px; height: 41px; border-bottom: 1px solid var(--divider); }
+.files .toolbar img { position: absolute; top: 12px; width: 18px; height: 18px; }
+.files .toolbar img:nth-child(1) { left: 10px; }
+.files .toolbar img:nth-child(2) { left: 37px; cursor: pointer; }
+.files .toolbar img:nth-child(3) { left: 64px; }
+.files .toolbar img:nth-child(4) { left: 91px; }
+.files .toolbar img:nth-child(5) { left: 118px; }
+.files-title { position: absolute; left: 10px; top: 50px; font: 600 12px Inter; color: var(--label-gray); }
+.pkg { position: absolute; left: 10px; top: 72px; font: 400 11px Inter; white-space: pre; }
+.pkg .caret { display: inline-block; width: 10px; font: 400 10px sans-serif; }
+.pkg2 { position: absolute; left: 10px; top: 88px; font: 400 11px Inter; white-space: pre; }
+.selected { position: absolute; left: 0; top: 108px; width: 149px; height: 22px; background: var(--selected); }
+.selected .file-name { position: absolute; left: 24px; top: 4px; font: 600 11px Inter; color: var(--text-dark); }
+
+.file-actions { position: absolute; left: 10px; top: 600px; width: 129px; display: flex; flex-direction: column; gap: 6px; }
+.file-actions button {
+  font: 600 11px Inter; color: var(--text); background: #fff; border: 1px solid var(--divider);
+  border-radius: 4px; height: 24px; cursor: pointer;
+}
+.file-actions button:hover { border-color: var(--label-gray); }
+.credit { position: absolute; left: 10px; top: 662px; font: 400 10px Inter; color: var(--label-gray); text-decoration: none; }
+.credit:hover { text-decoration: underline; }
+
+.tabs { left: 150px; top: 36px; width: 530px; height: 30px; background: var(--tabs-bg); }
+.tab-active { position: absolute; left: 0; top: 0; width: 150px; height: 30px; background: #fff; padding: 8px 0 0 10px;
+  font: 600 11px Inter; color: var(--text-dark); white-space: pre; }
+
+.code { left: 150px; top: 66px; width: 530px; height: 474px; background: #fff; }
+.code .cm-editor { height: 100%; font: 400 12px "Roboto Mono", monospace; color: var(--code); }
+.code .cm-editor.cm-focused { outline: none; }
+.code .cm-scroller { font-family: "Roboto Mono", monospace; line-height: 18px; }
+.code .cm-content { padding: 8px 0; caret-color: var(--code); }
+.code .cm-line { padding: 0 6px 0 8px; }
+.code .cm-gutters { background: var(--gutter-bg); border-right: none; color: var(--line-num); }
+.code .cm-lineNumbers .cm-gutterElement { width: 34px; min-width: 34px; padding: 0 4px 0 0; text-align: right; }
+.code .cm-gutterElement.cm-error-line { background: var(--error-line-bg); color: var(--red); }
+.code .cm-cursor { border-left-color: var(--code); }
+
+.messages { left: 150px; top: 540px; width: 530px; height: 180px; background: var(--messages-bg); border-top: 1px solid var(--divider); }
+.msg-label { position: absolute; left: 12px; top: 9px; font: 600 12px Inter; color: var(--label-gray); }
+.msg-title { position: absolute; left: 12px; top: 30px; width: 506px; height: 20px; font: 600 14px Inter; color: var(--label-gray); }
+.msg-title.ok { color: var(--success); }
+.msg-title.err { color: var(--red); }
+.msg-body {
+  position: absolute; left: 12px; top: 55px; width: 506px; height: 74px; overflow: auto;
+  font: 400 13px/18px Inter; color: var(--text); white-space: pre-wrap;
+}
+.msg-body .problem.jump { cursor: pointer; }
+.msg-body .problem.jump:hover { background: #F0F0F0; }
+
+.build {
+  position: absolute; left: 382px; top: 133px; width: 136px; height: 32px; border: 0; border-radius: 4px;
+  background: var(--red); color: #fff; cursor: pointer; padding: 0;
+}
+.build:hover { background: var(--red-dark); }
+.build.busy, .build:disabled { background: #E57373; cursor: default; }
+.build img { position: absolute; left: 10px; top: 7px; width: 18px; height: 18px; }
+.build-label { position: absolute; left: 34px; top: 0; font: 600 12px/32px Inter; white-space: nowrap; }
+
+/* ------------------------------------------------------------ sim */
+
+#sim { position: absolute; left: 680px; top: 0; width: 600px; height: 720px; }
+#sim canvas { display: block; width: 600px !important; height: 720px !important; }

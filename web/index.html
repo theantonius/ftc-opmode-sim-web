@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FTC OpMode Sim</title>
+<meta name="description" content="Write real FTC SDK OpMode code in the browser and watch a simulated robot and Driver Station.">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cjrtnc.leaningtech.com/5.0/loader.js"></script>
+<script src="vendor/p5.min.js"></script>
+</head>
+<body>
+<div id="stage">
+
+  <!-- OnBot Java-style editor, 680 x 720 (Figma "Editor", node 3:2) -->
+  <div id="editor">
+    <div class="topbar">
+      <span class="blocks">Blocks</span>
+      <span class="tab-onbot">OnBotJava</span>
+    </div>
+
+    <div class="files">
+      <div class="toolbar">
+        <img src="assets/icons/settings.svg" alt="" title="Settings (not in sim)">
+        <img src="assets/icons/undo.svg" alt="Undo" title="Undo" class="undo">
+        <img src="assets/icons/addfile.svg" alt="" title="New file (not in sim)">
+        <img src="assets/icons/upload.svg" alt="" title="Upload files (not in sim)">
+        <img src="assets/icons/collapse.svg" alt="" title="Collapse (not in sim)">
+      </div>
+      <div class="files-title">Project Files</div>
+      <div class="pkg"><span class="caret">▾</span>org.firstinspires.</div>
+      <div class="pkg2">    ftc.teamcode</div>
+      <div class="selected"><span class="file-name">FourMotorTest.java</span></div>
+
+      <div class="file-actions">
+        <button class="download" type="button" title="Save your OpMode as a .java file for a real robot">Download .java</button>
+        <button class="upload" type="button" title="Replace the OpMode with a .java file">Upload .java</button>
+        <input class="upload-input" type="file" accept=".java,text/x-java,text/plain" hidden>
+      </div>
+      <a class="credit" href="https://cheerpj.com/" target="_blank" rel="noopener">Built with CheerpJ</a>
+    </div>
+
+    <div class="tabs"><div class="tab-active"><span class="file-name">FourMotorTest.java</span>  ×</div></div>
+
+    <div class="code"></div>
+
+    <div class="messages">
+      <div class="msg-label">Messages</div>
+      <div class="msg-title"></div>
+      <div class="msg-body"></div>
+      <button class="build" type="button" title="Save and compile">
+        <img src="assets/icons/wrench.svg" alt=""><span class="build-label">Build Everything</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Robot view (top) + Driver Station (bottom), 600 x 720, drawn with p5.js -->
+  <div id="sim"></div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
