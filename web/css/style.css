@@ -77,8 +77,6 @@ body { font-family: Inter, sans-serif; }
   border-radius: 4px; height: 24px; cursor: pointer;
 }
 .file-actions button:hover { border-color: var(--label-gray); }
-.credit { position: absolute; left: 10px; top: 662px; font: 400 10px Inter; color: var(--label-gray); text-decoration: none; }
-.credit:hover { text-decoration: underline; }
 
 .tabs { left: 150px; top: 36px; width: 530px; height: 30px; background: var(--tabs-bg); }
 .tab-active { position: absolute; left: 0; top: 0; width: 150px; height: 30px; background: #fff; padding: 8px 0 0 10px;
@@ -106,7 +104,6 @@ body.mode-blocks .files, body.mode-blocks .tabs, body.mode-blocks .code { displa
   border-radius: 2px; padding: 0 7px; cursor: pointer;
 }
 .bk-toolbar button:hover, .bk-toolbar select:hover { background: #FFFFFF; }
-.bk-toolbar .credit { position: static; margin-left: auto; color: #F4C7CA; }
 .bk-toolbar .examples { position: static; width: 150px; }
 .bk-namebar { position: absolute; left: 0; top: 66px; width: 680px; height: 30px; background: #B3121C;
   display: flex; align-items: center; gap: 8px; padding: 0 8px;
