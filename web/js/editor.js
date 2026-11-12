@@ -80,8 +80,7 @@ export function readOnlyView(parent) {
     parent,
     state: EditorState.create({
       doc: "",
-      extensions: [lineNumbers(), errorField, drawSelection(), EditorView.lineWrapping, hangingIndent,
-        EditorState.readOnly.of(true)],
+      extensions: [lineNumbers(), errorField, drawSelection(), EditorState.readOnly.of(true)], // no wrap, like FTC Blocks' Java panel
     }),
   });
 }
@@ -138,8 +137,7 @@ export class Editor {
     this.$(".undo").addEventListener("click", () => { undo(this.view); this.view.focus(); });
     this.$(".build").addEventListener("click", () => this.onBuild());
     this.$(".download").addEventListener("click", () => this.download());
-    const examples = this.$(".examples");
-    examples.addEventListener("change", async () => {
+    for (const examples of this.root.querySelectorAll(".examples")) examples.addEventListener("change", async () => {
       const key = examples.value;
       const label = examples.selectedOptions[0].textContent;
       examples.value = "";

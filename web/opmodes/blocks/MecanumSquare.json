@@ -1,213 +1,138 @@
 {
- "blocks": {
-  "languageVersion": 0,
-  "blocks": [
-   {
-    "type": "ftc_opmode",
-    "x": 20,
-    "y": 20,
-    "fields": {
-     "KIND": "TeleOp",
-     "NAME": "Mecanum Square",
-     "CLASS": "MecanumSquare"
-    },
-    "inputs": {
-     "INIT": {
-      "block": {
-       "type": "ftc_motor_set_direction",
-       "fields": {
-        "MOTOR": "frontLeft",
-        "DIR": "REVERSE"
-       },
-       "next": {
-        "block": {
-         "type": "ftc_motor_set_direction",
-         "fields": {
-          "MOTOR": "backLeft",
-          "DIR": "REVERSE"
-         },
-         "next": {
-          "block": {
-           "type": "ftc_telemetry_add_data",
-           "fields": {
-            "KEY": "Status"
-           },
-           "inputs": {
-            "VALUE": {
-             "shadow": {
-              "type": "text",
-              "fields": {
-               "TEXT": "Ready. Press PLAY."
-              }
-             }
-            }
-           },
-           "next": {
-            "block": {
-             "type": "ftc_telemetry_update"
-            }
-           }
-          }
-         }
-        }
-       }
-      }
-     },
-     "RUN": {
-      "block": {
-       "type": "controls_repeat_ext",
-       "inputs": {
-        "TIMES": {
-         "shadow": {
-          "type": "math_number",
-          "fields": {
-           "NUM": 2
-          }
-         }
+ "name": "Mecanum Square",
+ "kind": "TeleOp",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "ftc_runopmode",
+     "x": 20,
+     "y": 20,
+     "deletable": false,
+     "inputs": {
+      "DO": {
+       "block": {
+        "type": "ftc_comment",
+        "fields": {
+         "TEXT": "Left motors are mounted flipped: reverse them."
         },
-        "DO": {
+        "next": {
          "block": {
-          "type": "ftc_telemetry_add_data",
+          "type": "ftc_motor_set_direction",
           "fields": {
-           "KEY": "Move"
+           "MOTOR": "frontLeft"
           },
           "inputs": {
            "VALUE": {
-            "shadow": {
-             "type": "text",
+            "block": {
+             "type": "ftc_direction",
              "fields": {
-              "TEXT": "Forward"
+              "DIR": "REVERSE"
              }
             }
            }
           },
           "next": {
            "block": {
-            "type": "ftc_telemetry_update",
+            "type": "ftc_motor_set_direction",
+            "fields": {
+             "MOTOR": "backLeft"
+            },
+            "inputs": {
+             "VALUE": {
+              "block": {
+               "type": "ftc_direction",
+               "fields": {
+                "DIR": "REVERSE"
+               }
+              }
+             }
+            },
             "next": {
              "block": {
-              "type": "ftc_motor_set_power",
-              "fields": {
-               "MOTOR": "frontLeft"
-              },
+              "type": "ftc_telemetry_adddata",
               "inputs": {
-               "POWER": {
-                "shadow": {
-                 "type": "math_number",
+               "KEY": {
+                "block": {
+                 "type": "text",
                  "fields": {
-                  "NUM": 0.5
+                  "TEXT": "Status"
+                 }
+                }
+               },
+               "VALUE": {
+                "block": {
+                 "type": "text",
+                 "fields": {
+                  "TEXT": "Ready. Press PLAY."
                  }
                 }
                }
               },
               "next": {
                "block": {
-                "type": "ftc_motor_set_power",
-                "fields": {
-                 "MOTOR": "frontRight"
-                },
-                "inputs": {
-                 "POWER": {
-                  "shadow": {
-                   "type": "math_number",
-                   "fields": {
-                    "NUM": 0.5
-                   }
-                  }
-                 }
-                },
+                "type": "ftc_telemetry_update",
                 "next": {
                  "block": {
-                  "type": "ftc_motor_set_power",
-                  "fields": {
-                   "MOTOR": "backLeft"
-                  },
-                  "inputs": {
-                   "POWER": {
-                    "shadow": {
-                     "type": "math_number",
-                     "fields": {
-                      "NUM": 0.5
-                     }
-                    }
-                   }
-                  },
+                  "type": "ftc_waitforstart",
                   "next": {
                    "block": {
-                    "type": "ftc_motor_set_power",
-                    "fields": {
-                     "MOTOR": "backRight"
-                    },
+                    "type": "controls_if",
                     "inputs": {
-                     "POWER": {
-                      "shadow": {
-                       "type": "math_number",
-                       "fields": {
-                        "NUM": 0.5
-                       }
+                     "IF0": {
+                      "block": {
+                       "type": "ftc_opmodeisactive"
                       }
-                     }
-                    },
-                    "next": {
-                     "block": {
-                      "type": "ftc_sleep",
-                      "inputs": {
-                       "MS": {
-                        "shadow": {
-                         "type": "math_number",
-                         "fields": {
-                          "NUM": 1500
-                         }
-                        }
-                       }
-                      },
-                      "next": {
-                       "block": {
-                        "type": "ftc_telemetry_add_data",
-                        "fields": {
-                         "KEY": "Move"
-                        },
-                        "inputs": {
-                         "VALUE": {
-                          "shadow": {
-                           "type": "text",
-                           "fields": {
-                            "TEXT": "Strafe right"
-                           }
+                     },
+                     "DO0": {
+                      "block": {
+                       "type": "controls_repeat_ext",
+                       "inputs": {
+                        "TIMES": {
+                         "shadow": {
+                          "type": "math_number",
+                          "fields": {
+                           "NUM": 2
                           }
                          }
                         },
-                        "next": {
+                        "DO": {
                          "block": {
-                          "type": "ftc_telemetry_update",
+                          "type": "ftc_telemetry_adddata",
+                          "inputs": {
+                           "KEY": {
+                            "block": {
+                             "type": "text",
+                             "fields": {
+                              "TEXT": "Move"
+                             }
+                            }
+                           },
+                           "VALUE": {
+                            "block": {
+                             "type": "text",
+                             "fields": {
+                              "TEXT": "Forward"
+                             }
+                            }
+                           }
+                          },
                           "next": {
                            "block": {
-                            "type": "ftc_motor_set_power",
-                            "fields": {
-                             "MOTOR": "frontLeft"
-                            },
-                            "inputs": {
-                             "POWER": {
-                              "shadow": {
-                               "type": "math_number",
-                               "fields": {
-                                "NUM": 0.5
-                               }
-                              }
-                             }
-                            },
+                            "type": "ftc_telemetry_update",
                             "next": {
                              "block": {
                               "type": "ftc_motor_set_power",
                               "fields": {
-                               "MOTOR": "frontRight"
+                               "MOTOR": "frontLeft"
                               },
                               "inputs": {
-                               "POWER": {
+                               "VALUE": {
                                 "shadow": {
                                  "type": "math_number",
                                  "fields": {
-                                  "NUM": -0.5
+                                  "NUM": 0.5
                                  }
                                 }
                                }
@@ -216,14 +141,14 @@
                                "block": {
                                 "type": "ftc_motor_set_power",
                                 "fields": {
-                                 "MOTOR": "backLeft"
+                                 "MOTOR": "frontRight"
                                 },
                                 "inputs": {
-                                 "POWER": {
+                                 "VALUE": {
                                   "shadow": {
                                    "type": "math_number",
                                    "fields": {
-                                    "NUM": -0.5
+                                    "NUM": 0.5
                                    }
                                   }
                                  }
@@ -232,10 +157,10 @@
                                  "block": {
                                   "type": "ftc_motor_set_power",
                                   "fields": {
-                                   "MOTOR": "backRight"
+                                   "MOTOR": "backLeft"
                                   },
                                   "inputs": {
-                                   "POWER": {
+                                   "VALUE": {
                                     "shadow": {
                                      "type": "math_number",
                                      "fields": {
@@ -246,64 +171,69 @@
                                   },
                                   "next": {
                                    "block": {
-                                    "type": "ftc_sleep",
+                                    "type": "ftc_motor_set_power",
+                                    "fields": {
+                                     "MOTOR": "backRight"
+                                    },
                                     "inputs": {
-                                     "MS": {
+                                     "VALUE": {
                                       "shadow": {
                                        "type": "math_number",
                                        "fields": {
-                                        "NUM": 1500
+                                        "NUM": 0.5
                                        }
                                       }
                                      }
                                     },
                                     "next": {
                                      "block": {
-                                      "type": "ftc_telemetry_add_data",
-                                      "fields": {
-                                       "KEY": "Move"
-                                      },
+                                      "type": "ftc_sleep",
                                       "inputs": {
-                                       "VALUE": {
+                                       "MS": {
                                         "shadow": {
-                                         "type": "text",
+                                         "type": "math_number",
                                          "fields": {
-                                          "TEXT": "Backward"
+                                          "NUM": 1500
                                          }
                                         }
                                        }
                                       },
                                       "next": {
                                        "block": {
-                                        "type": "ftc_telemetry_update",
+                                        "type": "ftc_telemetry_adddata",
+                                        "inputs": {
+                                         "KEY": {
+                                          "block": {
+                                           "type": "text",
+                                           "fields": {
+                                            "TEXT": "Move"
+                                           }
+                                          }
+                                         },
+                                         "VALUE": {
+                                          "block": {
+                                           "type": "text",
+                                           "fields": {
+                                            "TEXT": "Strafe right"
+                                           }
+                                          }
+                                         }
+                                        },
                                         "next": {
                                          "block": {
-                                          "type": "ftc_motor_set_power",
-                                          "fields": {
-                                           "MOTOR": "frontLeft"
-                                          },
-                                          "inputs": {
-                                           "POWER": {
-                                            "shadow": {
-                                             "type": "math_number",
-                                             "fields": {
-                                              "NUM": -0.5
-                                             }
-                                            }
-                                           }
-                                          },
+                                          "type": "ftc_telemetry_update",
                                           "next": {
                                            "block": {
                                             "type": "ftc_motor_set_power",
                                             "fields": {
-                                             "MOTOR": "frontRight"
+                                             "MOTOR": "frontLeft"
                                             },
                                             "inputs": {
-                                             "POWER": {
+                                             "VALUE": {
                                               "shadow": {
                                                "type": "math_number",
                                                "fields": {
-                                                "NUM": -0.5
+                                                "NUM": 0.5
                                                }
                                               }
                                              }
@@ -312,10 +242,10 @@
                                              "block": {
                                               "type": "ftc_motor_set_power",
                                               "fields": {
-                                               "MOTOR": "backLeft"
+                                               "MOTOR": "frontRight"
                                               },
                                               "inputs": {
-                                               "POWER": {
+                                               "VALUE": {
                                                 "shadow": {
                                                  "type": "math_number",
                                                  "fields": {
@@ -328,10 +258,10 @@
                                                "block": {
                                                 "type": "ftc_motor_set_power",
                                                 "fields": {
-                                                 "MOTOR": "backRight"
+                                                 "MOTOR": "backLeft"
                                                 },
                                                 "inputs": {
-                                                 "POWER": {
+                                                 "VALUE": {
                                                   "shadow": {
                                                    "type": "math_number",
                                                    "fields": {
@@ -342,64 +272,69 @@
                                                 },
                                                 "next": {
                                                  "block": {
-                                                  "type": "ftc_sleep",
+                                                  "type": "ftc_motor_set_power",
+                                                  "fields": {
+                                                   "MOTOR": "backRight"
+                                                  },
                                                   "inputs": {
-                                                   "MS": {
+                                                   "VALUE": {
                                                     "shadow": {
                                                      "type": "math_number",
                                                      "fields": {
-                                                      "NUM": 1500
+                                                      "NUM": 0.5
                                                      }
                                                     }
                                                    }
                                                   },
                                                   "next": {
                                                    "block": {
-                                                    "type": "ftc_telemetry_add_data",
-                                                    "fields": {
-                                                     "KEY": "Move"
-                                                    },
+                                                    "type": "ftc_sleep",
                                                     "inputs": {
-                                                     "VALUE": {
+                                                     "MS": {
                                                       "shadow": {
-                                                       "type": "text",
+                                                       "type": "math_number",
                                                        "fields": {
-                                                        "TEXT": "Strafe left"
+                                                        "NUM": 1500
                                                        }
                                                       }
                                                      }
                                                     },
                                                     "next": {
                                                      "block": {
-                                                      "type": "ftc_telemetry_update",
+                                                      "type": "ftc_telemetry_adddata",
+                                                      "inputs": {
+                                                       "KEY": {
+                                                        "block": {
+                                                         "type": "text",
+                                                         "fields": {
+                                                          "TEXT": "Move"
+                                                         }
+                                                        }
+                                                       },
+                                                       "VALUE": {
+                                                        "block": {
+                                                         "type": "text",
+                                                         "fields": {
+                                                          "TEXT": "Backward"
+                                                         }
+                                                        }
+                                                       }
+                                                      },
                                                       "next": {
                                                        "block": {
-                                                        "type": "ftc_motor_set_power",
-                                                        "fields": {
-                                                         "MOTOR": "frontLeft"
-                                                        },
-                                                        "inputs": {
-                                                         "POWER": {
-                                                          "shadow": {
-                                                           "type": "math_number",
-                                                           "fields": {
-                                                            "NUM": -0.5
-                                                           }
-                                                          }
-                                                         }
-                                                        },
+                                                        "type": "ftc_telemetry_update",
                                                         "next": {
                                                          "block": {
                                                           "type": "ftc_motor_set_power",
                                                           "fields": {
-                                                           "MOTOR": "frontRight"
+                                                           "MOTOR": "frontLeft"
                                                           },
                                                           "inputs": {
-                                                           "POWER": {
+                                                           "VALUE": {
                                                             "shadow": {
                                                              "type": "math_number",
                                                              "fields": {
-                                                              "NUM": 0.5
+                                                              "NUM": -0.5
                                                              }
                                                             }
                                                            }
@@ -408,14 +343,14 @@
                                                            "block": {
                                                             "type": "ftc_motor_set_power",
                                                             "fields": {
-                                                             "MOTOR": "backLeft"
+                                                             "MOTOR": "frontRight"
                                                             },
                                                             "inputs": {
-                                                             "POWER": {
+                                                             "VALUE": {
                                                               "shadow": {
                                                                "type": "math_number",
                                                                "fields": {
-                                                                "NUM": 0.5
+                                                                "NUM": -0.5
                                                                }
                                                               }
                                                              }
@@ -424,10 +359,10 @@
                                                              "block": {
                                                               "type": "ftc_motor_set_power",
                                                               "fields": {
-                                                               "MOTOR": "backRight"
+                                                               "MOTOR": "backLeft"
                                                               },
                                                               "inputs": {
-                                                               "POWER": {
+                                                               "VALUE": {
                                                                 "shadow": {
                                                                  "type": "math_number",
                                                                  "fields": {
@@ -438,13 +373,146 @@
                                                               },
                                                               "next": {
                                                                "block": {
-                                                                "type": "ftc_sleep",
+                                                                "type": "ftc_motor_set_power",
+                                                                "fields": {
+                                                                 "MOTOR": "backRight"
+                                                                },
                                                                 "inputs": {
-                                                                 "MS": {
+                                                                 "VALUE": {
                                                                   "shadow": {
                                                                    "type": "math_number",
                                                                    "fields": {
-                                                                    "NUM": 1500
+                                                                    "NUM": -0.5
+                                                                   }
+                                                                  }
+                                                                 }
+                                                                },
+                                                                "next": {
+                                                                 "block": {
+                                                                  "type": "ftc_sleep",
+                                                                  "inputs": {
+                                                                   "MS": {
+                                                                    "shadow": {
+                                                                     "type": "math_number",
+                                                                     "fields": {
+                                                                      "NUM": 1500
+                                                                     }
+                                                                    }
+                                                                   }
+                                                                  },
+                                                                  "next": {
+                                                                   "block": {
+                                                                    "type": "ftc_telemetry_adddata",
+                                                                    "inputs": {
+                                                                     "KEY": {
+                                                                      "block": {
+                                                                       "type": "text",
+                                                                       "fields": {
+                                                                        "TEXT": "Move"
+                                                                       }
+                                                                      }
+                                                                     },
+                                                                     "VALUE": {
+                                                                      "block": {
+                                                                       "type": "text",
+                                                                       "fields": {
+                                                                        "TEXT": "Strafe left"
+                                                                       }
+                                                                      }
+                                                                     }
+                                                                    },
+                                                                    "next": {
+                                                                     "block": {
+                                                                      "type": "ftc_telemetry_update",
+                                                                      "next": {
+                                                                       "block": {
+                                                                        "type": "ftc_motor_set_power",
+                                                                        "fields": {
+                                                                         "MOTOR": "frontLeft"
+                                                                        },
+                                                                        "inputs": {
+                                                                         "VALUE": {
+                                                                          "shadow": {
+                                                                           "type": "math_number",
+                                                                           "fields": {
+                                                                            "NUM": -0.5
+                                                                           }
+                                                                          }
+                                                                         }
+                                                                        },
+                                                                        "next": {
+                                                                         "block": {
+                                                                          "type": "ftc_motor_set_power",
+                                                                          "fields": {
+                                                                           "MOTOR": "frontRight"
+                                                                          },
+                                                                          "inputs": {
+                                                                           "VALUE": {
+                                                                            "shadow": {
+                                                                             "type": "math_number",
+                                                                             "fields": {
+                                                                              "NUM": 0.5
+                                                                             }
+                                                                            }
+                                                                           }
+                                                                          },
+                                                                          "next": {
+                                                                           "block": {
+                                                                            "type": "ftc_motor_set_power",
+                                                                            "fields": {
+                                                                             "MOTOR": "backLeft"
+                                                                            },
+                                                                            "inputs": {
+                                                                             "VALUE": {
+                                                                              "shadow": {
+                                                                               "type": "math_number",
+                                                                               "fields": {
+                                                                                "NUM": 0.5
+                                                                               }
+                                                                              }
+                                                                             }
+                                                                            },
+                                                                            "next": {
+                                                                             "block": {
+                                                                              "type": "ftc_motor_set_power",
+                                                                              "fields": {
+                                                                               "MOTOR": "backRight"
+                                                                              },
+                                                                              "inputs": {
+                                                                               "VALUE": {
+                                                                                "shadow": {
+                                                                                 "type": "math_number",
+                                                                                 "fields": {
+                                                                                  "NUM": -0.5
+                                                                                 }
+                                                                                }
+                                                                               }
+                                                                              },
+                                                                              "next": {
+                                                                               "block": {
+                                                                                "type": "ftc_sleep",
+                                                                                "inputs": {
+                                                                                 "MS": {
+                                                                                  "shadow": {
+                                                                                   "type": "math_number",
+                                                                                   "fields": {
+                                                                                    "NUM": 1500
+                                                                                   }
+                                                                                  }
+                                                                                 }
+                                                                                }
+                                                                               }
+                                                                              }
+                                                                             }
+                                                                            }
+                                                                           }
+                                                                          }
+                                                                         }
+                                                                        }
+                                                                       }
+                                                                      }
+                                                                     }
+                                                                    }
                                                                    }
                                                                   }
                                                                  }
@@ -489,6 +557,106 @@
                           }
                          }
                         }
+                       },
+                       "next": {
+                        "block": {
+                         "type": "ftc_motor_set_power",
+                         "fields": {
+                          "MOTOR": "frontLeft"
+                         },
+                         "inputs": {
+                          "VALUE": {
+                           "shadow": {
+                            "type": "math_number",
+                            "fields": {
+                             "NUM": 0
+                            }
+                           }
+                          }
+                         },
+                         "next": {
+                          "block": {
+                           "type": "ftc_motor_set_power",
+                           "fields": {
+                            "MOTOR": "frontRight"
+                           },
+                           "inputs": {
+                            "VALUE": {
+                             "shadow": {
+                              "type": "math_number",
+                              "fields": {
+                               "NUM": 0
+                              }
+                             }
+                            }
+                           },
+                           "next": {
+                            "block": {
+                             "type": "ftc_motor_set_power",
+                             "fields": {
+                              "MOTOR": "backLeft"
+                             },
+                             "inputs": {
+                              "VALUE": {
+                               "shadow": {
+                                "type": "math_number",
+                                "fields": {
+                                 "NUM": 0
+                                }
+                               }
+                              }
+                             },
+                             "next": {
+                              "block": {
+                               "type": "ftc_motor_set_power",
+                               "fields": {
+                                "MOTOR": "backRight"
+                               },
+                               "inputs": {
+                                "VALUE": {
+                                 "shadow": {
+                                  "type": "math_number",
+                                  "fields": {
+                                   "NUM": 0
+                                  }
+                                 }
+                                }
+                               },
+                               "next": {
+                                "block": {
+                                 "type": "ftc_telemetry_adddata",
+                                 "inputs": {
+                                  "KEY": {
+                                   "block": {
+                                    "type": "text",
+                                    "fields": {
+                                     "TEXT": "Move"
+                                    }
+                                   }
+                                  },
+                                  "VALUE": {
+                                   "block": {
+                                    "type": "text",
+                                    "fields": {
+                                     "TEXT": "Done"
+                                    }
+                                   }
+                                  }
+                                 },
+                                 "next": {
+                                  "block": {
+                                   "type": "ftc_telemetry_update"
+                                  }
+                                 }
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
                        }
                       }
                      }
@@ -505,106 +673,11 @@
           }
          }
         }
-       },
-       "next": {
-        "block": {
-         "type": "ftc_motor_set_power",
-         "fields": {
-          "MOTOR": "frontLeft"
-         },
-         "inputs": {
-          "POWER": {
-           "shadow": {
-            "type": "math_number",
-            "fields": {
-             "NUM": 0
-            }
-           }
-          }
-         },
-         "next": {
-          "block": {
-           "type": "ftc_motor_set_power",
-           "fields": {
-            "MOTOR": "frontRight"
-           },
-           "inputs": {
-            "POWER": {
-             "shadow": {
-              "type": "math_number",
-              "fields": {
-               "NUM": 0
-              }
-             }
-            }
-           },
-           "next": {
-            "block": {
-             "type": "ftc_motor_set_power",
-             "fields": {
-              "MOTOR": "backLeft"
-             },
-             "inputs": {
-              "POWER": {
-               "shadow": {
-                "type": "math_number",
-                "fields": {
-                 "NUM": 0
-                }
-               }
-              }
-             },
-             "next": {
-              "block": {
-               "type": "ftc_motor_set_power",
-               "fields": {
-                "MOTOR": "backRight"
-               },
-               "inputs": {
-                "POWER": {
-                 "shadow": {
-                  "type": "math_number",
-                  "fields": {
-                   "NUM": 0
-                  }
-                 }
-                }
-               },
-               "next": {
-                "block": {
-                 "type": "ftc_telemetry_add_data",
-                 "fields": {
-                  "KEY": "Move"
-                 },
-                 "inputs": {
-                  "VALUE": {
-                   "shadow": {
-                    "type": "text",
-                    "fields": {
-                     "TEXT": "Done"
-                    }
-                   }
-                  }
-                 },
-                 "next": {
-                  "block": {
-                   "type": "ftc_telemetry_update"
-                  }
-                 }
-                }
-               }
-              }
-             }
-            }
-           }
-          }
-         }
-        }
        }
       }
      }
     }
-   }
-  ]
+   ]
+  }
  }
 }

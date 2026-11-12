@@ -30,9 +30,10 @@ This is the web version of the [FTC OpMode Sim Processing sketch](https://github
 
 ## Blocks mode
 
-Click **Blocks** at the top of the editor to build an OpMode with drag-and-drop blocks, similar to FTC Blocks. The blocks generate real Java, shown read-only under the workspace as you work. **Build Everything** compiles that Java and the Driver Station runs it, just like Java mode.
+Click **Blocks** at the top of the editor to build an OpMode with drag-and-drop blocks, laid out like FTC Blocks: the toolbox on the left, the Op Mode Name on top, and the generated Java in the **Java Code** panel on the right (turn it off with **Show Java**). **Build Everything** compiles that Java and the Driver Station runs it, just like Java mode.
 
-- Blocks: the OpMode block (runOpMode with waitForStart and a `while (opModeIsActive())` loop), motor power, direction and current position, sleep, telemetry addData and update, plus logic, loops, math, text and variables
+- A new program starts like FTC Blocks: `to runOpMode` with `call waitForStart`, `if opModeIsActive` and `repeat while opModeIsActive`
+- Blocks: LinearOpMode (waitForStart, opModeIsActive, sleep, idle), Actuators > DcMotor (Power, Direction, CurrentPosition), Utilities > Telemetry (addData, update), Logic, Loops, Math, Text, Variables, and a comment block
 - **Convert to Java** copies the generated Java into OnBotJava mode so you can keep editing it
 - Your blocks are saved in your browser, separately from your Java file
 - **Download .java** in Blocks mode saves the generated Java
