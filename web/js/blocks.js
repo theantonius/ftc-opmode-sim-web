@@ -1,7 +1,7 @@
 // Blocks mode: drag-and-drop blocks (Blockly) that generate a real FTC OpMode in Java.
 // Labels and layout follow FTC Blocks so students recognize them; the block definitions,
 // colors and Java generator are written for this project.
-import Blockly from "../vendor/blockly.js?v=20261112g";
+import Blockly from "../vendor/blockly.js?v=202611122313";
 
 const MOTORS = [["frontLeft", "frontLeft"], ["frontRight", "frontRight"], ["backLeft", "backLeft"], ["backRight", "backRight"]];
 const MOTOR_ORDER = MOTORS.map((m) => m[0]);

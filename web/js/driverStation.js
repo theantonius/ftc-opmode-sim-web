@@ -2,7 +2,7 @@
 // Port of DriverStationView.java (Figma "Driver Station", node 4:27).
 // Working: OpMode bar, INIT -> PLAY -> STOP button, Status line, telemetry, errors.
 // Static: timer, battery, network, User 1/2, menu.
-import * as D from "./draw.js?v=20261112g";
+import * as D from "./draw.js?v=202611122313";
 
 const BG = "#3C0007";
 const TOP_BAR = "#2A2A2A";
@@ -42,10 +42,24 @@ export class DriverStation {
     this.selected = null; // {name, kind} picked from a triangle menu, like the real DS
     this.menu = null;     // open OpMode list: "Autonomous" (left triangle) | "TeleOp" (right triangle)
     this.menuHover = -1;
+    this.busy = true;          // building: INIT/PLAY/STOP and the OpMode lists are locked
+    this.hideError = false;    // after a good build: hide the old run's error until the next INIT
+  }
+
+  /** While Build Everything / Save Op Mode runs: lock the controls and close any open list. */
+  setBusy(on) {
+    this.busy = on;
+    if (on) {
+      this.menu = null;
+      this.menuHover = -1;
+      this.hover = false;
+      this.hoverTri = null;
+    }
   }
 
   /** After a build: keep the selection if the same OpMode is still there, otherwise clear it. */
   onBuilt(built) {
+    this.hideError = true;
     if (this.selected && (!built || built.name !== this.selected.name || built.kind !== this.selected.kind)) this.selected = null;
     else if (this.selected) this.selected = built;
   }
@@ -58,7 +72,7 @@ export class DriverStation {
 
   /** True over the big INIT/PLAY/STOP button (only after an OpMode is selected). */
   overButton(snap, x, y) {
-    if (!this.selected || this.menu) return false;
+    if (this.busy || !this.selected || this.menu) return false;
     const r = BTN_D / 2, cx = BTN_X + r, cy = BTN_Y + r;
     return (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r;
   }
@@ -72,7 +86,10 @@ export class DriverStation {
   /** Which triangle (x, y) is on: left = Autonomous list, right = TeleOp list. Disabled while an OpMode runs. */
   overTri(snap, x, y) {
     const s = snap ? snap.state : "IDLE";
-    if (s === "INIT" || s === "RUNNING" || y < 142.89 || y > 180.79) return null;
+    if (this.busy) return null;
+    // Locked while the selected OpMode runs; with nothing selected the lists always open.
+    if ((s === "INIT" || s === "RUNNING") && this.selected) return null;
+    if (y < 142.89 || y > 180.79) return null;
     if (x < 75) return "Autonomous";
     if (x > 225 && x < 300) return "TeleOp";
     return null;
@@ -99,6 +116,7 @@ export class DriverStation {
 
   /** Click in panel coordinates. Returns "init" | "play" | "stop" for the sim, or null. */
   click(snap, built, x, y) {
+    if (this.busy) return null;
     if (this.menu) {
       const items = this.menuItems(built);
       const i = this.menuRowAt(x, y, built);
@@ -115,7 +133,10 @@ export class DriverStation {
       this.menu = tri;
       return null;
     }
-    return this.overButton(snap, x, y) ? this.action(snap) : null;
+    if (!this.overButton(snap, x, y)) return null;
+    const act = this.action(snap);
+    if (act === "init") this.hideError = false; // Java clears its error on INIT
+    return act;
   }
 
   wheel(x, y, lines) {
@@ -130,7 +151,7 @@ export class DriverStation {
     const name = this.selected ? this.selected.name : null;
     const kind = this.selected ? this.selected.kind : null;
     const state = snap ? snap.state : "IDLE";
-    const error = snap ? snap.error : null;
+    const error = snap && !this.hideError ? snap.error : null;
 
     p.noStroke();
     p.fill(BG);
@@ -175,8 +196,12 @@ export class DriverStation {
     p.fill(BG);
     p.rect(0, 180, 300, 180);
     D.image(ctx, ic.big_bg_circle, 10.26, 133.42);
+    ctx.save();
+    if (this.busy) ctx.globalAlpha = 0.4;
     if (name) this.bigButton(state);
-    D.text(ctx, name ? "INIT → PLAY ▶ → STOP ■" : "◀ ▼ Autonomous          TeleOp ▼ ▶", D.font("semibold", 9.474), HINT, 150, 337.89, D.CENTER);
+    ctx.restore();
+    const hint = this.busy ? "Building…" : name ? "INIT → PLAY ▶ → STOP ■" : "◀ ▼ Autonomous          TeleOp ▼ ▶";
+    D.text(ctx, hint, D.font("semibold", 9.474), HINT, 150, 337.89, D.CENTER);
 
     // Telemetry pane
     D.box(ctx, 300, 68.68, 300, 291.316, BG, BORDER, BW);
@@ -188,12 +213,13 @@ export class DriverStation {
     p.fill(BORDER);
     p.rect(0, 142.89, 300, 37.895);
     ctx.save();
-    ctx.globalAlpha = this.hoverTri === "Autonomous" || this.menu === "Autonomous" ? 0.75 : 1;
+    const dim = this.busy ? 0.35 : 1;
+    ctx.globalAlpha = dim * (this.hoverTri === "Autonomous" || this.menu === "Autonomous" ? 0.75 : 1);
     D.image(ctx, ic.tri, 19.74, 146.84);
-    ctx.globalAlpha = this.hoverTri === "TeleOp" || this.menu === "TeleOp" ? 0.75 : 1;
+    ctx.globalAlpha = dim * (this.hoverTri === "TeleOp" || this.menu === "TeleOp" ? 0.75 : 1);
     D.image(ctx, ic.tri, 250.26, 146.84);
     ctx.restore();
-    const bar = name ? [kind, name] : ["", "No Op Mode"];
+    const bar = name ? [kind, name] : ["", "Select an OpMode"];
     D.lines(ctx, bar, D.font("semibold", 11.053), WHITE, 150, 144.47, 16.579, D.CENTER);
 
     if (this.menu) this.paintMenu(built);
@@ -229,7 +255,7 @@ export class DriverStation {
   }
 
   status(state, name, error) {
-    if (!name) return "No Op Mode selected";
+    if (!name) return this.busy ? "Building…" : "Select an OpMode";
     switch (state) {
       case "INIT": return "Initialized " + name;
       case "RUNNING": return "Running " + name;

@@ -1,10 +1,10 @@
 // FTC OpMode Sim (web): p5.js sketch (instance mode) + OnBot Java-style editor + Java sim on CheerpJ.
-import * as java from "./java.js?v=20261112g";
-import * as D from "./draw.js?v=20261112g";
-import { Editor, nextSteps } from "./editor.js?v=20261112g";
-import { BlocksMode } from "./blocksMode.js?v=20261112g";
-import { RobotView } from "./robotView.js?v=20261112g";
-import { DriverStation } from "./driverStation.js?v=20261112g";
+import * as java from "./java.js?v=202611122313";
+import * as D from "./draw.js?v=202611122313";
+import { Editor, nextSteps } from "./editor.js?v=202611122313";
+import { BlocksMode } from "./blocksMode.js?v=202611122313";
+import { RobotView } from "./robotView.js?v=202611122313";
+import { DriverStation } from "./driverStation.js?v=202611122313";
 
 const W = 1280, H = 720;
 const SIM_X = 680, DS_Y = 360;
@@ -28,6 +28,8 @@ fit();
 
 // ---------------------------------------------------------------- build
 
+let building = true; // true until the first build finishes; the Driver Station is locked while building
+let inFlight = false; // a build is running (Cmd+S can't start a second one)
 let built = null; // {name, kind} from the last good build: it shows up in the Driver Station's OpMode list
 
 const editor = new Editor(document.getElementById("editor"), {
@@ -42,7 +44,7 @@ window.__sim = { java, blocks, ds: () => ds }; // for automated checks in the br
 blocks.place(scale);
 
 async function build() {
-  if (!java.ready()) return;
+  if (!java.ready() || inFlight) return;
   editor.save();
   let fileName = editor.name, source = editor.text, view = editor.view;
   if (blocks.mode === "blocks") {
@@ -53,7 +55,8 @@ async function build() {
     }
     ({ fileName, source, view } = s);
   }
-  editor.setBuilding(true);
+  inFlight = true;
+  setBusy(true);
   editor.message("Building…", "", "");
   try {
     const r = await java.build(fileName, source);
@@ -66,8 +69,16 @@ async function build() {
   } catch (e) {
     editor.message("Build failed", "err", String(e));
   } finally {
-    editor.setBuilding(false);
+    inFlight = false;
+    setBusy(false);
   }
+}
+
+/** Locks Build and the Driver Station (INIT/PLAY/STOP + OpMode lists) while a build runs. */
+function setBusy(on) {
+  building = on;
+  editor.setBuilding(on);
+  if (ds) ds.setBusy(on);
 }
 
 // ---------------------------------------------------------------- sim view (p5.js)
@@ -81,6 +92,7 @@ new p5((p) => {
     fit();
     robot = new RobotView(p);
     ds = new DriverStation(p);
+    ds.setBusy(building);
     ds.load();
     const c = p.canvas;
     c.addEventListener("mousemove", (e) => {
