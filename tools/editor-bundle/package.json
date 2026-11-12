@@ -1,14 +1,17 @@
 {
   "name": "ftc-opmode-sim-web-editor-bundle",
   "private": true,
-  "description": "Builds web/vendor/codemirror.js (CodeMirror 6, MIT). Run: npm ci && npm run build",
+  "description": "Builds web/vendor/codemirror.js (CodeMirror 6, MIT) and web/vendor/blockly.js (Blockly, Apache-2.0). Run: npm ci && npm run build",
   "scripts": {
-    "build": "esbuild entry.js --bundle --format=esm --minify --legal-comments=eof --outfile=../../web/vendor/codemirror.js"
+    "build": "npm run build:codemirror && npm run build:blockly",
+    "build:codemirror": "esbuild entry.js --bundle --format=esm --minify --legal-comments=eof --outfile=../../web/vendor/codemirror.js",
+    "build:blockly": "esbuild blockly-entry.js --bundle --format=esm --minify --legal-comments=eof --outfile=../../web/vendor/blockly.js && rm -rf ../../web/vendor/blockly-media && cp -R node_modules/blockly/media ../../web/vendor/blockly-media"
   },
   "devDependencies": {
     "@codemirror/commands": "6.11.1",
     "@codemirror/state": "6.7.6",
     "@codemirror/view": "6.43.15",
+    "blockly": "12.5.1",
     "esbuild": "0.28.2"
   }
 }
