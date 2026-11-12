@@ -89,7 +89,7 @@ export class BlocksMode {
     const theme = Blockly.Theme.defineTheme("ftc-opmode-sim", {
       base: Blockly.Themes.Classic,
       fontStyle: { family: "Inter, sans-serif", weight: "500", size: 11 },
-      componentStyles: { workspaceBackgroundColour: "#FFFFFF", toolboxBackgroundColour: "#FFFFFF", flyoutBackgroundColour: "#F3F3F3", flyoutOpacity: 1 },
+      componentStyles: { workspaceBackgroundColour: "#FFFFFF", toolboxBackgroundColour: "#E4E4E4", flyoutBackgroundColour: "#D6D6D6", flyoutOpacity: 0.85 },
     });
     this.ws = Blockly.inject(this.host, {
       toolbox, theme, renderer: "geras", media: "vendor/blockly-media/", sounds: false, trashcan: true,

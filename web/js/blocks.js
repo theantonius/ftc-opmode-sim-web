@@ -7,12 +7,26 @@ const MOTORS = [["frontLeft", "frontLeft"], ["frontRight", "frontRight"], ["back
 const MOTOR_ORDER = MOTORS.map((m) => m[0]);
 
 export const COLOR = {
-  opmode: "#995BA5",    // LinearOpMode + runOpMode (purple)
-  motor: "#5BA55B",     // DcMotor (green)
+  opmode: "#995BA5",    // LinearOpMode, runOpMode and Telemetry (purple, like FTC Blocks)
+  motor: "#5BA58C",     // DcMotor (green-teal)
   constant: "#A5745B",  // Direction values (brown)
-  telemetry: "#5BA58C", // Telemetry (teal)
-  misc: "#888888",      // comment
+  telemetry: "#995BA5", // Telemetry (purple)
+  misc: "#5B80A5",      // comment (blue-gray)
 };
+
+export const RUNOPMODE_COMMENT = "This function is executed when this Op Mode is selected from the Driver Station.";
+
+/** A name shown in a light rounded box, like the identifiers in FTC Blocks ("call [MyOpMode] . [waitForStart]"). */
+class FieldBox extends Blockly.FieldLabel {
+  initView() {
+    this.createBorderRect_();
+    this.createTextElement_();
+    Blockly.utils.dom.addClass(this.fieldGroup_, "ftcBox");
+  }
+}
+Blockly.fieldRegistry.register("field_box", class extends FieldBox {
+  static fromJson(options) { return new this(Blockly.utils.parsing.replaceMessageReferences(options.text)); }
+});
 
 // ---------------------------------------------------------------- OpMode name shown in "call <name>.waitForStart"
 
@@ -41,8 +55,8 @@ export function className(name) {
 const callBlock = (type, method, opts) => {
   Blockly.Blocks[type] = {
     init() {
-      const row = this.appendDummyInput().appendField("call").appendField(new Blockly.FieldLabel(opModeName), "OPMODE")
-        .appendField("." + method);
+      const row = this.appendDummyInput().appendField("call").appendField(new FieldBox(opModeName), "OPMODE")
+        .appendField(".").appendField(new FieldBox(method));
       if (opts.input) this.appendValueInput(opts.input).setCheck("Number").appendField(opts.inputLabel);
       if (opts.output) this.setOutput(true, opts.output);
       else {
@@ -59,7 +73,7 @@ const callBlock = (type, method, opts) => {
 
 Blockly.Blocks["ftc_runopmode"] = {
   init() {
-    this.appendDummyInput().appendField("to runOpMode");
+    this.appendDummyInput().appendField("to").appendField(new FieldBox("runOpMode"));
     this.appendStatementInput("DO");
     this.setColour(COLOR.opmode);
     this.setTooltip("This function is executed when this Op Mode is selected from the Driver Station.");
@@ -71,6 +85,13 @@ callBlock("ftc_waitforstart", "waitForStart", { tooltip: "Wait until PLAY is pre
 callBlock("ftc_opmodeisactive", "opModeIsActive", { output: "Boolean", tooltip: "True after PLAY until STOP." });
 callBlock("ftc_idle", "idle", { tooltip: "Let the robot controller do other work for a moment." });
 callBlock("ftc_sleep", "sleep", { input: "MS", inputLabel: "milliseconds", tooltip: "Wait this many milliseconds (1000 ms = 1 second)." });
+
+// set motor.[Power|Direction]: the value socket takes a number or a Direction to match.
+Blockly.Extensions.register("ftc_motor_prop_check", function () {
+  const update = (prop) => this.getInput("VALUE").setCheck(prop === "Direction" ? "Direction" : "Number");
+  this.getField("PROP").setValidator((v) => { update(v); return v; });
+  update(this.getFieldValue("PROP"));
+});
 
 Blockly.common.defineBlocksWithJsonArray([
   {
@@ -115,6 +136,53 @@ Blockly.common.defineBlocksWithJsonArray([
     tooltip: "A motor direction.",
   },
   {
+    type: "ftc_motor_set",
+    message0: "set %1 . %2 to %3",
+    args0: [
+      { type: "field_dropdown", name: "MOTOR", options: MOTORS },
+      { type: "field_dropdown", name: "PROP", options: [["Power", "Power"], ["Direction", "Direction"]] },
+      { type: "input_value", name: "VALUE", check: "Number" },
+    ],
+    previousStatement: null, nextStatement: null, inputsInline: true,
+    colour: COLOR.motor,
+    extensions: ["ftc_motor_prop_check"],
+    tooltip: "Power: -1 (full reverse) to 1 (full forward). Direction: REVERSE flips which way positive power turns the motor.",
+  },
+  {
+    type: "ftc_telemetry_adddata_number",
+    message0: "call %1 . %2 %3 key %4 number %5",
+    args0: [
+      { type: "field_box", text: "Telemetry" }, { type: "field_box", text: "addData" },
+      { type: "input_dummy" },
+      { type: "input_value", name: "KEY", check: "String", align: "RIGHT" },
+      { type: "input_value", name: "VALUE", check: "Number", align: "RIGHT" },
+    ],
+    previousStatement: null, nextStatement: null,
+    colour: COLOR.telemetry,
+    tooltip: "Add a line with a number to the Driver Station. It shows after Telemetry.update.",
+  },
+  {
+    type: "ftc_telemetry_adddata_text",
+    message0: "call %1 . %2 %3 key %4 text %5",
+    args0: [
+      { type: "field_box", text: "Telemetry" }, { type: "field_box", text: "addData" },
+      { type: "input_dummy" },
+      { type: "input_value", name: "KEY", check: "String", align: "RIGHT" },
+      { type: "input_value", name: "VALUE", check: "String", align: "RIGHT" },
+    ],
+    previousStatement: null, nextStatement: null,
+    colour: COLOR.telemetry,
+    tooltip: "Add a line with text to the Driver Station. It shows after Telemetry.update.",
+  },
+  {
+    type: "ftc_note",
+    message0: "%1",
+    args0: [{ type: "field_input", name: "TEXT", text: "comment" }],
+    previousStatement: null, nextStatement: null,
+    colour: COLOR.misc,
+    tooltip: "A comment for people reading the program. It does nothing.",
+  },
+  {
     type: "ftc_telemetry_adddata",
     message0: "call Telemetry.addData %1 key %2 value %3",
     args0: [
@@ -128,7 +196,8 @@ Blockly.common.defineBlocksWithJsonArray([
   },
   {
     type: "ftc_telemetry_update",
-    message0: "call Telemetry.update",
+    message0: "call %1 . %2",
+    args0: [{ type: "field_box", text: "Telemetry" }, { type: "field_box", text: "update" }],
     previousStatement: null, nextStatement: null,
     colour: COLOR.telemetry,
     tooltip: "Send the telemetry lines to the Driver Station.",
@@ -202,6 +271,16 @@ java.forBlock["ftc_direction"] = (block) => [`DcMotor.Direction.${block.getField
 java.forBlock["ftc_telemetry_adddata"] = (block, gen) =>
   `telemetry.addData(${gen.valueToCode(block, "KEY", O.NONE) || '"key"'}, ${gen.valueToCode(block, "VALUE", O.NONE) || '""'});\n`;
 java.forBlock["ftc_telemetry_update"] = () => "telemetry.update();\n";
+java.forBlock["ftc_motor_set"] = function (block, gen) {
+  const m = motor(gen, block);
+  const v = gen.valueToCode(block, "VALUE", O.NONE);
+  return block.getFieldValue("PROP") === "Direction"
+    ? `${m}.setDirection(${v || "DcMotor.Direction.FORWARD"});\n`
+    : `${m}.setPower(${v || "0"});\n`;
+};
+java.forBlock["ftc_telemetry_adddata_number"] = java.forBlock["ftc_telemetry_adddata"];
+java.forBlock["ftc_telemetry_adddata_text"] = java.forBlock["ftc_telemetry_adddata"];
+java.forBlock["ftc_note"] = (block) => "// " + block.getFieldValue("TEXT") + "\n";
 java.forBlock["ftc_comment"] = (block) => "// " + block.getFieldValue("TEXT") + "\n";
 
 // ---- Blockly built-ins
@@ -299,7 +378,7 @@ export function generate(workspace, name, kind) {
     `public class ${cls} extends LinearOpMode {\n\n` +
     (fields ? ind(fields, 1) + "\n" : "") +
     "    /**\n" +
-    "     * This function is executed when this Op Mode is selected from the Driver Station.\n" +
+    java.prefixLines((root.getCommentText() || RUNOPMODE_COMMENT).trim(), "     * ") + "\n" +
     "     */\n" +
     "    @Override\n" +
     "    public void runOpMode() {\n" +
@@ -319,7 +398,7 @@ export const toolbox = {
   kind: "categoryToolbox",
   contents: [
     {
-      kind: "category", name: "LinearOpMode", colour: COLOR.opmode, contents: [
+      kind: "category", name: "LinearOpMode", contents: [
         { kind: "block", type: "ftc_waitforstart" },
         { kind: "block", type: "ftc_opmodeisactive" },
         { kind: "block", type: "ftc_sleep", inputs: { MS: num(1000) } },
@@ -327,11 +406,11 @@ export const toolbox = {
       ],
     },
     {
-      kind: "category", name: "Actuators", colour: COLOR.motor, contents: [
+      kind: "category", name: "Actuators", contents: [
         {
-          kind: "category", name: "DcMotor", colour: COLOR.motor, contents: [
-            { kind: "block", type: "ftc_motor_set_power", inputs: { VALUE: num(1) } },
-            { kind: "block", type: "ftc_motor_set_direction", inputs: { VALUE: { block: { type: "ftc_direction" } } } },
+          kind: "category", name: "DcMotor", contents: [
+            { kind: "block", type: "ftc_motor_set", fields: { PROP: "Power" }, inputs: { VALUE: num(1) } },
+            { kind: "block", type: "ftc_motor_set", fields: { PROP: "Direction" }, inputs: { VALUE: { block: { type: "ftc_direction" } } } },
             { kind: "block", type: "ftc_motor_get" },
             { kind: "block", type: "ftc_direction" },
           ],
@@ -339,16 +418,17 @@ export const toolbox = {
       ],
     },
     {
-      kind: "category", name: "Utilities", colour: COLOR.telemetry, contents: [
+      kind: "category", name: "Utilities", contents: [
         {
-          kind: "category", name: "Telemetry", colour: COLOR.telemetry, contents: [
-            { kind: "block", type: "ftc_telemetry_adddata", inputs: { KEY: txt("key"), VALUE: txt("text") } },
-            { kind: "block", type: "ftc_telemetry_adddata", inputs: { KEY: txt("key"), VALUE: num(123) } },
+          kind: "category", name: "Telemetry", contents: [
+            { kind: "block", type: "ftc_telemetry_adddata_number", inputs: { KEY: txt("key"), VALUE: num(123) } },
+            { kind: "block", type: "ftc_telemetry_adddata_text", inputs: { KEY: txt("key"), VALUE: txt("text") } },
             { kind: "block", type: "ftc_telemetry_update" },
           ],
         },
       ],
     },
+    { kind: "sep" },
     {
       kind: "category", name: "Logic", categorystyle: "logic_category", contents: [
         { kind: "block", type: "controls_if" },
@@ -373,20 +453,22 @@ export const toolbox = {
     },
     { kind: "category", name: "Text", categorystyle: "text_category", contents: [{ kind: "block", type: "text" }] },
     { kind: "category", name: "Variables", categorystyle: "variable_category", custom: "VARIABLE" },
-    { kind: "category", name: "Miscellaneous", colour: COLOR.misc, contents: [{ kind: "block", type: "ftc_comment" }] },
+    { kind: "category", name: "Miscellaneous", colour: COLOR.misc, contents: [{ kind: "block", type: "ftc_note" }] },
   ],
 };
 
 // ---------------------------------------------------------------- starter program (like a new FTC Blocks Op Mode)
 
-const comment = (t, next) => ({ type: "ftc_comment", fields: { TEXT: t }, ...(next ? { next: { block: next } } : {}) });
+const comment = (t, next) => ({ type: "ftc_note", fields: { TEXT: t }, ...(next ? { next: { block: next } } : {}) });
+/** The runOpMode block's comment balloon, open like in FTC Blocks. */
+export const RUNOPMODE_ICONS = { comment: { text: RUNOPMODE_COMMENT, pinned: true, height: 58, width: 330 } };
 const active = () => ({ block: { type: "ftc_opmodeisactive" } });
 
 export const STARTER = {
   blocks: {
     languageVersion: 0,
     blocks: [{
-      type: "ftc_runopmode", x: 20, y: 20,
+      type: "ftc_runopmode", x: 30, y: 80, icons: RUNOPMODE_ICONS,
       inputs: {
         DO: {
           block: comment("Put initialization blocks here.", {

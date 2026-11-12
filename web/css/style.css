@@ -99,21 +99,26 @@ body { font-family: Inter, sans-serif; }
 .bk { display: none; }
 body.mode-blocks .bk { display: block; }
 body.mode-blocks .files, body.mode-blocks .tabs, body.mode-blocks .code { display: none; }
-.bk-toolbar { position: absolute; left: 0; top: 36px; width: 680px; height: 30px; background: var(--pane-bg);
-  border-bottom: 1px solid var(--divider); display: flex; align-items: center; gap: 6px; padding: 0 8px; }
+.bk-toolbar { position: absolute; left: 0; top: 36px; width: 680px; height: 30px; background: #8E1B22;
+  display: flex; align-items: center; gap: 4px; padding: 0 6px; }
 .bk-toolbar button, .bk-toolbar select {
-  height: 22px; font: 600 11px Inter; color: var(--text); background: #fff; border: 1px solid var(--divider);
-  border-radius: 3px; padding: 0 8px; cursor: pointer;
+  height: 22px; font: 400 12px Arial, Helvetica, sans-serif; color: #222; background: #EEEEEE; border: 1px solid #BBBBBB;
+  border-radius: 2px; padding: 0 7px; cursor: pointer;
 }
-.bk-toolbar button:hover, .bk-toolbar select:hover { border-color: var(--label-gray); }
-.bk-toolbar .credit { position: static; margin-left: auto; }
+.bk-toolbar button:hover, .bk-toolbar select:hover { background: #FFFFFF; }
+.bk-toolbar .credit { position: static; margin-left: auto; color: #F4C7CA; }
 .bk-toolbar .examples { position: static; width: 150px; }
-.bk-namebar { position: absolute; left: 0; top: 66px; width: 680px; height: 30px; background: #fff;
-  border-bottom: 1px solid var(--divider); display: flex; align-items: center; gap: 8px; padding: 0 10px;
-  font: 600 12px Inter; color: var(--text-dark); }
-.bk-name { width: 170px; height: 20px; font: 400 12px Inter; border: 1px solid var(--divider); border-radius: 2px; padding: 0 5px; margin-left: 4px; }
-.bk-kind { height: 22px; font: 400 12px Inter; }
-.bk-showjava-label { margin-left: auto; font: 400 12px Inter; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.bk-namebar { position: absolute; left: 0; top: 66px; width: 680px; height: 30px; background: #B3121C;
+  display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  font: 700 13px Arial, Helvetica, sans-serif; color: #fff; }
+.bk-namebar label { display: flex; align-items: center; white-space: nowrap; }
+/* The name reads like FTC's plain "Op Mode Name: X" text, but stays editable */
+.bk-name { width: 190px; height: 20px; font: 700 13px Arial, Helvetica, sans-serif; color: #fff; background: transparent;
+  border: 0; border-bottom: 1px dashed transparent; padding: 0 3px; margin-left: 4px; }
+.bk-name:hover { border-bottom-color: rgba(255,255,255,0.6); }
+.bk-name:focus { outline: none; background: rgba(255,255,255,0.15); border-bottom-color: #fff; }
+.bk-kind { height: 20px; font: 400 12px Arial, Helvetica, sans-serif; }
+.bk-showjava-label { margin-left: auto; font: 700 13px Arial, Helvetica, sans-serif; gap: 4px; cursor: pointer; }
 .bk-java { position: absolute; left: 420px; top: 96px; width: 260px; height: 464px; border-left: 1px solid var(--divider); background: #fff; }
 .bk.no-java .bk-java { display: none; }
 .bk-java-title { height: 22px; background: var(--red); color: #fff; font: 700 12px/22px Inter; padding-left: 8px; }
@@ -127,8 +132,12 @@ body.mode-blocks .files, body.mode-blocks .tabs, body.mode-blocks .code { displa
 .gen .cm-gutterElement.cm-error-line { background: var(--error-line-bg); color: var(--red); }
 #blockly-host { position: fixed; display: none; z-index: 1; --stage-scale: 1; }
 body.mode-blocks #blockly-host { display: block; }
-/* Toolbox like FTC Blocks: white list, thin color strip, text scales with the stage */
-#blockly-host .blocklyToolbox, #blockly-host .blocklyToolboxDiv { background: #fff; border-right: 1px solid var(--divider); }
+/* Toolbox like FTC Blocks: light gray list, FTC categories first, divider, then color-strip categories */
+#blockly-host .blocklyToolbox, #blockly-host .blocklyToolboxDiv { background: #E4E4E4; }
+#blockly-host .blocklyTreeSeparator, #blockly-host .blocklyToolboxSeparator { border-bottom: 1px solid #BBBBBB; margin: 4px 0; }
+/* Names in light rounded boxes: call [MyOpMode] . [waitForStart] */
+#blockly-host .ftcBox > rect { fill: #FFFFFF; fill-opacity: 0.6; stroke: none; }
+#blockly-host .ftcBox > text, #blockly-host .ftcBox > .blocklyText { fill: #000000; }
 #blockly-host .blocklyTreeLabel, #blockly-host .blocklyToolboxCategoryLabel { font: 400 calc(13px * var(--stage-scale)) Inter, sans-serif; color: var(--text-dark); }
 #blockly-host .blocklyTreeRow, #blockly-host .blocklyToolboxCategory { height: auto; line-height: calc(22px * var(--stage-scale)); }
 #blockly-host .blocklyTreeSelected, #blockly-host .blocklyToolboxSelected { background: var(--selected) !important; }
@@ -166,3 +175,5 @@ body.mode-blocks .build { left: 532px; }
 body.mode-blocks .messages { height: 160px; }
 body.mode-blocks .msg-body { height: 56px; }
 body.mode-blocks .build { top: 117px; }
+/* runOpMode comment balloon: light purple like FTC Blocks */
+#blockly-host .blocklyCommentTextarea, #blockly-host .blocklyTextarea { background: #EADCEE; color: #222; font: 400 calc(12px * var(--stage-scale)) Inter, sans-serif; }
