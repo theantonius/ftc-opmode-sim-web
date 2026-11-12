@@ -63,6 +63,11 @@ body { font-family: Inter, sans-serif; }
 .selected { position: absolute; left: 0; top: 108px; width: 149px; height: 22px; background: var(--selected); }
 .selected .file-name { position: absolute; left: 24px; top: 4px; font: 600 11px Inter; color: var(--text-dark); }
 
+.examples-label { position: absolute; left: 10px; top: 540px; font: 600 12px Inter; color: var(--label-gray); }
+.examples {
+  position: absolute; left: 10px; top: 560px; width: 129px; height: 24px;
+  font: 400 11px Inter; color: var(--text); background: #fff; border: 1px solid var(--divider); border-radius: 4px;
+}
 .file-actions { position: absolute; left: 10px; top: 600px; width: 129px; display: flex; flex-direction: column; gap: 6px; }
 .file-actions button {
   font: 600 11px Inter; color: var(--text); background: #fff; border: 1px solid var(--divider);

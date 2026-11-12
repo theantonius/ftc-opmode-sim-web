@@ -106,6 +106,16 @@ export class Editor {
     this.$(".undo").addEventListener("click", () => { undo(this.view); this.view.focus(); });
     this.$(".build").addEventListener("click", () => this.onBuild());
     this.$(".download").addEventListener("click", () => this.download());
+    const examples = this.$(".examples");
+    examples.addEventListener("change", async () => {
+      const key = examples.value;
+      const label = examples.selectedOptions[0].textContent;
+      examples.value = "";
+      if (!key) return;
+      this.setFile(await (await fetch("opmodes/" + key + ".java")).text(), true);
+      this.message("Loaded example: " + label, "", "Press Build Everything to compile it. Cmd+Z brings back your code.");
+      this.view.focus();
+    });
     const upload = this.$(".upload-input");
     this.$(".upload").addEventListener("click", () => upload.click());
     upload.addEventListener("change", async () => {
