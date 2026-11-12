@@ -1,10 +1,10 @@
 // FTC OpMode Sim (web): p5.js sketch (instance mode) + OnBot Java-style editor + Java sim on CheerpJ.
-import * as java from "./java.js?v=20261112f";
-import * as D from "./draw.js?v=20261112f";
-import { Editor } from "./editor.js?v=20261112f";
-import { BlocksMode } from "./blocksMode.js?v=20261112f";
-import { RobotView } from "./robotView.js?v=20261112f";
-import { DriverStation } from "./driverStation.js?v=20261112f";
+import * as java from "./java.js?v=20261112g";
+import * as D from "./draw.js?v=20261112g";
+import { Editor } from "./editor.js?v=20261112g";
+import { BlocksMode } from "./blocksMode.js?v=20261112g";
+import { RobotView } from "./robotView.js?v=20261112g";
+import { DriverStation } from "./driverStation.js?v=20261112g";
 
 const W = 1280, H = 720;
 const SIM_X = 680, DS_Y = 360;

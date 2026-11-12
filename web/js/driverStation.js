@@ -2,7 +2,7 @@
 // Port of DriverStationView.java (Figma "Driver Station", node 4:27).
 // Working: OpMode bar, INIT -> PLAY -> STOP button, Status line, telemetry, errors.
 // Static: timer, battery, network, User 1/2, menu.
-import * as D from "./draw.js?v=20261112f";
+import * as D from "./draw.js?v=20261112g";
 
 const BG = "#3C0007";
 const TOP_BAR = "#2A2A2A";

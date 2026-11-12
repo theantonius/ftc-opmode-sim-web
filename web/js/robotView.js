@@ -1,11 +1,8 @@
 // Top-down robot view, 600 x 360. Port of RobotView.java (Figma "Robot View", node 6:2).
 // Wheels-up bench test: wheels spin, robot stays put.
-import * as D from "./draw.js?v=20261112f";
+import * as D from "./draw.js?v=20261112g";
 
 const BG = "#2B2F33";
-const HEADER = "#3A4046";
-const TITLE = "#E6EDF3";
-const BENCH = "#F2C94C";
 const FRONT = "#9AA4AE";
 const FRAME = "#B8BEC4";
 const WHEEL = "#3A3A3A";
@@ -76,10 +73,6 @@ export class RobotView {
     p.noStroke();
     p.fill(BG);
     p.rect(0, 0, 600, 360);
-    p.fill(HEADER);
-    p.rect(0, 0, 600, 28);
-    D.text(ctx, "ROBOT VIEW · TOP DOWN", D.font("bold", 12), TITLE, 12, 6, D.LEFT);
-    D.text(ctx, "BENCH TEST: wheels off ground", D.font("semibold", 12), BENCH, 588, 6, D.RIGHT);
     D.text(ctx, "▲ FRONT", D.font("bold", 11), FRONT, 300, 36, D.CENTER);
 
     // H-frame, open end at the front
