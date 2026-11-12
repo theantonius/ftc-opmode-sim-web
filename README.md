@@ -4,6 +4,8 @@ A p5.js web sketch that lets students write and run real FTC SDK OpMode code in 
 
 Students write the same Java they would put on a real robot. The code they write in the sim pastes onto a real robot unchanged.
 
+**Try it:** https://theantonius.github.io/ftc-opmode-sim-web/ (desktop Chrome recommended)
+
 This is the web version of the [FTC OpMode Sim Processing sketch](https://github.com/theantonius/ftc-opmode-sim).
 
 ![FTC OpMode Sim: OnBot Java-style editor, robot view and Driver Station](docs/screenshot.png)
