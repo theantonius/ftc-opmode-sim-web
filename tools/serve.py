@@ -2,7 +2,8 @@
 """Local test server with HTTP Range support (CheerpJ needs it; python -m http.server has none).
 
 Usage: python3 tools/serve.py [port]   (serves the repo root; default port 8080)
-Then open http://localhost:8080/web/  (the Step 1 spike is at /spike/)
+Then open http://localhost:8080/ in Chrome (redirects to /web/; the Step 1 spike is at /spike/).
+Stop with Ctrl+C.
 """
 import os
 import re
@@ -22,6 +23,11 @@ class RangeHandler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
+        if self.path in ("", "/"):
+            self.send_response(302)
+            self.send_header("Location", "/web/")
+            self.end_headers()
+            return
         rng = self.headers.get("Range")
         path = self.translate_path(self.path)
         m = re.match(r"bytes=(\d*)-(\d*)$", rng or "")
@@ -49,5 +55,5 @@ class RangeHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
-    print(f"Serving {os.path.abspath(ROOT)} at http://localhost:{port}/web/")
+    print(f"FTC OpMode Sim: open http://localhost:{port}/ in Chrome (Ctrl+C to stop)")
     ThreadingHTTPServer(("127.0.0.1", port), RangeHandler).serve_forever()
