@@ -12,7 +12,7 @@ This is the web version of the [FTC OpMode Sim Processing sketch](https://github
 
 ## What's in the window
 
-- **Editor (left):** an OnBot Java-style editor. Type your OpMode, press **Build Everything**, and see "Build succeeded!" or compile errors with line numbers. Click an error to jump to its line.
+- **Editor (left):** an OnBot Java-style editor. Type your OpMode, press **Build Everything**, and see "Build succeeded!" or compile errors with line numbers. Click an error to jump to its line. The **Blocks** tab switches to Blocks mode (below).
 - **Robot view (top right):** a top-down mecanum chassis on a bench (wheels off the ground). Each wheel shows its name, port, power, encoder count and a spin arrow. The center circle shows the robot's direction for the 10 standard mecanum moves.
 - **Driver Station (bottom right):** modeled on the real Driver Station. Press INIT → PLAY → STOP and read live telemetry (scroll it with the mouse wheel).
 
@@ -26,7 +26,18 @@ This is the web version of the [FTC OpMode Sim Processing sketch](https://github
 - Real Driver Station error when a hardware name is wrong
 - A loop that ignores STOP can't freeze the page: after 5 seconds the Driver Station reports the code is stuck and stops it
 - Your OpMode is saved in your browser automatically. **Download .java** saves it for a real robot; **Upload .java** opens a file.
-- Example OpModes in the **Examples** menu: 4 Motor Test, 4 Motor Test with compile errors, a stuck `while (true)` loop, and Mecanum Patterns
+- Example OpModes in the **Examples** menu: 4 Motor Test, 4 Motor Test with compile errors, a stuck `while (true)` loop, Mecanum Patterns, and two Blocks examples (Drive Forward, Mecanum Square)
+
+## Blocks mode
+
+Click **Blocks** at the top of the editor to build an OpMode with drag-and-drop blocks, similar to FTC Blocks. The blocks generate real Java, shown read-only under the workspace as you work. **Build Everything** compiles that Java and the Driver Station runs it, just like Java mode.
+
+- Blocks: the OpMode block (runOpMode with waitForStart and a `while (opModeIsActive())` loop), motor power, direction and current position, sleep, telemetry addData and update, plus logic, loops, math, text and variables
+- **Convert to Java** copies the generated Java into OnBotJava mode so you can keep editing it
+- Your blocks are saved in your browser, separately from your Java file
+- **Download .java** in Blocks mode saves the generated Java
+
+![Blocks mode: blocks, generated Java and the Driver Station running Mecanum Square](docs/blocks-mode.png)
 
 ## Run it locally
 
@@ -75,7 +86,7 @@ java/src/org/nycfirst/opmodesim/     the simulator, shared with the Processing s
 java/src/org/nycfirst/opmodesimweb/  web-only bridge
 tools/serve.py            local test server
 tools/build-jar.sh        rebuilds web/sim.jar (needs JDK 17+)
-tools/editor-bundle/      rebuilds web/vendor/codemirror.js (needs Node.js)
+tools/editor-bundle/      rebuilds web/vendor/codemirror.js and blockly.js (needs Node.js)
 spike/                    Step 1 test page (CheerpJ check)
 ```
 
@@ -84,6 +95,7 @@ spike/                    Step 1 test page (CheerpJ check)
 - Built with [CheerpJ](https://cheerpj.com/) by Leaning Technologies, which runs the Java simulator and compiler in the browser. Used under the CheerpJ Community licence (free for educational use and non-commercial open source; loaded from the CheerpJ CDN). Uses that need a commercial licence or self-hosting are covered by Leaning Technologies' paid licences.
 - [p5.js](https://p5js.org/) (LGPL-2.1), bundled in `web/vendor/`
 - [CodeMirror](https://codemirror.net/) (MIT), bundled in `web/vendor/`
+- [Blockly](https://developers.google.com/blockly) (Apache-2.0), bundled in `web/vendor/`. The FTC-style blocks and the Java generator were written for this project.
 - Fonts: Inter and Roboto Mono (SIL Open Font License; license files next to the fonts)
 
 ## License
