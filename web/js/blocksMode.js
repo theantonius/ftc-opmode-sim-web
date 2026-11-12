@@ -1,12 +1,12 @@
 // Blocks mode controller: layout like FTC Blocks (toolbox on the left, Java Code panel on the right,
 // Op Mode Name row on top). Blockly lives outside the CSS-scaled stage (it doesn't support scaled
 // parents) and is kept exactly over its stage area.
-import Blockly, { toolbox, generate, className, setOpModeName, STARTER } from "./blocks.js";
-import { readOnlyView, setViewText } from "./editor.js";
+import Blockly, { toolbox, generate, className, setOpModeName, STARTER } from "./blocks.js?v=20261112e";
+import { readOnlyView, setViewText } from "./editor.js?v=20261112e";
 
 const STORE = "ftc-opmode-sim-web.blocks2"; // {name, kind, showJava, workspace}
 const MODE_KEY = "ftc-opmode-sim-web.mode";
-const AREA = { x: 0, y: 96, w: 680, h: 464 }; // under the Op Mode Name row, above Messages
+const AREA = { x: 0, y: 96, w: 680, h: 524 }; // under the Op Mode Name row, above Messages
 const JAVA_W = 260;                          // Java Code panel width
 const BASE_ZOOM = 0.65;
 
@@ -33,12 +33,13 @@ export class BlocksMode {
 
     let saved = null;
     try { saved = JSON.parse(store.get(STORE)); } catch (e) { saved = null; }
-    this.saved = saved && saved.workspace ? saved : null;
-    this.nameInput.value = (this.saved && this.saved.name) || "My OpMode";
-    this.kindSelect.value = (this.saved && this.saved.kind) || "TeleOp";
-    this.showJava.checked = !this.saved || this.saved.showJava !== false;
+    this.savedState = saved && saved.workspace ? saved : null; // last session (localStorage)
+    this.nameInput.value = (this.savedState && this.savedState.name) || "My OpMode";
+    this.kindSelect.value = (this.savedState && this.savedState.kind) || "TeleOp";
+    this.showJava.checked = !this.savedState || this.savedState.showJava !== false;
 
     for (const b of document.querySelectorAll(".tab-mode")) b.addEventListener("click", () => this.setMode(b.dataset.mode));
+    this.ui.querySelector(".bk-save").addEventListener("click", () => this.saveOpMode());
     this.ui.querySelector(".bk-convert").addEventListener("click", () => this.convertToJava());
     this.ui.querySelector(".bk-download").addEventListener("click", () => this.editor.download());
     this.nameInput.addEventListener("input", () => { setOpModeName(this.ws, this.nameInput.value); this.changed(); });
@@ -50,11 +51,11 @@ export class BlocksMode {
       e.stopImmediatePropagation();
       this.ws.undo(false);
     }, true);
-    // Cmd+S saves the blocks instead of opening the browser's Save dialog.
+    // Cmd+S = Save Op Mode (instead of the browser's Save dialog).
     addEventListener("keydown", (e) => {
       if (this.mode === "blocks" && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        this.save();
+        this.saveOpMode();
       }
     });
   }
@@ -99,7 +100,7 @@ export class BlocksMode {
     this.wsScale = this.scale;
     setOpModeName(null, this.name);
     try {
-      Blockly.serialization.workspaces.load(this.saved ? this.saved.workspace : STARTER, this.ws);
+      Blockly.serialization.workspaces.load(this.savedState ? this.savedState.workspace : STARTER, this.ws);
     } catch (e) {
       Blockly.serialization.workspaces.load(STARTER, this.ws);
     }
@@ -138,6 +139,25 @@ export class BlocksMode {
       }
       Blockly.svgResize(this.ws);
     }
+  }
+
+  /** Save Op Mode: like FTC Blocks, saving also builds it so it appears on the Driver Station. */
+  saveOpMode() {
+    this.status("Saving…", "");
+    this.editor.onBuild();
+  }
+
+  /** Called by the build with the result (Blocks mode only). */
+  saved(ok) {
+    this.status(ok ? "Save completed successfully" : "Save failed: see Messages", ok ? "ok" : "err");
+  }
+
+  status(text, kind) {
+    const s = this.ui.querySelector(".bk-status");
+    s.textContent = text;
+    s.className = "bk-status " + kind;
+    clearTimeout(this.statusTimer);
+    if (kind === "ok") this.statusTimer = setTimeout(() => { s.textContent = ""; }, 4000);
   }
 
   changed() {
@@ -192,7 +212,7 @@ export class BlocksMode {
     Blockly.serialization.workspaces.load(ex.workspace, this.ws);
     setOpModeName(this.ws, ex.name);
     this.changed();
-    this.editor.message("Loaded example: " + label, "", "Press Build Everything to compile the generated Java.");
+    this.editor.message("Loaded example: " + label, "", "Press Save Op Mode, then pick it on the Driver Station (▼ on the right for TeleOp, left for Autonomous).");
   }
 
   convertToJava() {

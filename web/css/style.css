@@ -116,7 +116,7 @@ body.mode-blocks .files, body.mode-blocks .tabs, body.mode-blocks .code { displa
 .bk-name:focus { outline: none; background: rgba(255,255,255,0.15); border-bottom-color: #fff; }
 .bk-kind { height: 20px; font: 400 12px Arial, Helvetica, sans-serif; }
 .bk-showjava-label { margin-left: auto; font: 700 13px Arial, Helvetica, sans-serif; gap: 4px; cursor: pointer; }
-.bk-java { position: absolute; left: 420px; top: 96px; width: 260px; height: 464px; border-left: 1px solid var(--divider); background: #fff; }
+.bk-java { position: absolute; left: 420px; top: 96px; width: 260px; height: 524px; border-left: 1px solid var(--divider); background: #fff; }
 .bk.no-java .bk-java { display: none; }
 .bk-java-title { height: 22px; background: var(--red); color: #fff; font: 700 12px/22px Inter; padding-left: 8px; }
 .bk-java .gen { position: absolute; left: 0; top: 22px; right: 0; bottom: 0; }
@@ -169,8 +169,11 @@ body.mode-blocks .build { left: 532px; }
 
 #sim { position: absolute; left: 680px; top: 0; width: 600px; height: 720px; }
 #sim canvas { display: block; width: 600px !important; height: 720px !important; }
-body.mode-blocks .messages { height: 160px; }
-body.mode-blocks .msg-body { height: 56px; }
-body.mode-blocks .build { top: 117px; }
+/* Blocks mode: Save Op Mode builds, so no Build Everything; a short Messages strip for errors */
+body.mode-blocks .messages { top: 620px; height: 100px; }
+body.mode-blocks .msg-body { height: 44px; }
+body.mode-blocks .build { display: none; }
+.bk-status { font: 700 12px Arial, Helvetica, sans-serif; color: #fff; margin-left: 6px; white-space: nowrap; }
+.bk-status.err { color: #FFD54F; }
 /* runOpMode comment balloon: light purple like FTC Blocks */
 #blockly-host .blocklyCommentTextarea, #blockly-host .blocklyTextarea { background: #EADCEE; color: #222; font: 400 calc(12px * var(--stage-scale)) Inter, sans-serif; }
