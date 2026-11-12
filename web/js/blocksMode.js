@@ -2,7 +2,7 @@
 // Op Mode Name row on top). Blockly lives outside the CSS-scaled stage (it doesn't support scaled
 // parents) and is kept exactly over its stage area.
 import Blockly, { toolbox, generate, className, setOpModeName, STARTER } from "./blocks.js?v=20261112g";
-import { readOnlyView, setViewText } from "./editor.js?v=20261112g";
+import { readOnlyView, setViewText, nextSteps } from "./editor.js?v=20261112g";
 
 const STORE = "ftc-opmode-sim-web.blocks2"; // {name, kind, showJava, workspace}
 const MODE_KEY = "ftc-opmode-sim-web.mode";
@@ -214,7 +214,7 @@ export class BlocksMode {
     Blockly.serialization.workspaces.load(ex.workspace, this.ws);
     setOpModeName(this.ws, ex.name);
     this.changed();
-    this.editor.message("Loaded example: " + label, "", "Press Save Op Mode, then pick it on the Driver Station (▼ on the right for TeleOp, left for Autonomous).");
+    this.editor.message("Loaded example: " + label, "", nextSteps(true, ex.name, ex.kind, false));
   }
 
   convertToJava() {

@@ -1,7 +1,7 @@
 // FTC OpMode Sim (web): p5.js sketch (instance mode) + OnBot Java-style editor + Java sim on CheerpJ.
 import * as java from "./java.js?v=20261112g";
 import * as D from "./draw.js?v=20261112g";
-import { Editor } from "./editor.js?v=20261112g";
+import { Editor, nextSteps } from "./editor.js?v=20261112g";
 import { BlocksMode } from "./blocksMode.js?v=20261112g";
 import { RobotView } from "./robotView.js?v=20261112g";
 import { DriverStation } from "./driverStation.js?v=20261112g";
@@ -57,7 +57,7 @@ async function build() {
   editor.message("Building…", "", "");
   try {
     const r = await java.build(fileName, source);
-    editor.showResult(r, view);
+    editor.showResult(r, view, nextSteps(blocks.mode === "blocks", r.name, r.kind, true));
     if (r.ok) {
       built = { name: r.name, kind: r.kind };
       if (ds) ds.onBuilt(built);

@@ -148,7 +148,7 @@ export class Editor {
       }
       if (this.hooks.onJavaChanged) this.hooks.onJavaChanged();
       this.setFile(await (await fetch("opmodes/" + key + ".java")).text(), true);
-      this.message("Loaded example: " + label, "", "Press Build Everything to compile it. Cmd+Z brings back your code.");
+      this.message("Loaded example: " + label, "", nextSteps(false, null, null, false) + "\n(Cmd+Z brings back your code.)");
       this.view.focus();
     });
     const upload = this.$(".upload-input");
@@ -235,10 +235,10 @@ export class Editor {
   }
 
   /** Shows a build result like the Processing editor and tints error lines. */
-  showResult(r, view = this.view) {
+  showResult(r, view = this.view, steps = null) {
     const lines = [];
     if (r.ok) {
-      this.message("Build succeeded!", "ok", 'OpMode "' + r.name + '" is now available on the Driver Station.');
+      this.message("Build succeeded!", "ok", steps || 'OpMode "' + r.name + '" is now available on the Driver Station.');
     } else {
       const n = r.problems.length;
       this.message("Build failed: " + n + (n === 1 ? " error" : " errors"), "err", "");
@@ -266,4 +266,12 @@ export class Editor {
     view.dispatch({ selection: { anchor: pos }, effects: EditorView.scrollIntoView(pos, { y: "center" }) });
     view.focus();
   }
+}
+
+/** The full first-use order, for Messages: build/save, pick on the Driver Station, INIT, PLAY. */
+export function nextSteps(blocks, name, kind, built) {
+  const first = blocks ? "Save Op Mode" : "Build Everything";
+  const what = name ? '"' + name + '"' : "your OpMode";
+  const side = kind === "Autonomous" ? "the left ▼ (Autonomous)" : kind === "TeleOp" ? "the right ▼ (TeleOp)" : "▼ (right = TeleOp, left = Autonomous)";
+  return "To run it: 1. " + first + (built ? " ✓" : "") + "   2. On the Driver Station, pick " + what + " with " + side + "   3. INIT   4. PLAY ▶";
 }
