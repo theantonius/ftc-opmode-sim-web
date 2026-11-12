@@ -4,7 +4,7 @@ import {
   EditorState, StateField, StateEffect, RangeSet,
   EditorView, ViewPlugin, Decoration, GutterMarker, keymap, lineNumbers, gutterLineClass, drawSelection,
   history, historyKeymap, defaultKeymap, undo, redo,
-} from "../vendor/codemirror.js?v=20261112e";
+} from "../vendor/codemirror.js?v=20261112f";
 
 const STORE = "ftc-opmode-sim-web.opmode"; // {name, text}
 

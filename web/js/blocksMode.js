@@ -1,8 +1,8 @@
 // Blocks mode controller: layout like FTC Blocks (toolbox on the left, Java Code panel on the right,
 // Op Mode Name row on top). Blockly lives outside the CSS-scaled stage (it doesn't support scaled
 // parents) and is kept exactly over its stage area.
-import Blockly, { toolbox, generate, className, setOpModeName, STARTER } from "./blocks.js?v=20261112e";
-import { readOnlyView, setViewText } from "./editor.js?v=20261112e";
+import Blockly, { toolbox, generate, className, setOpModeName, STARTER } from "./blocks.js?v=20261112f";
+import { readOnlyView, setViewText } from "./editor.js?v=20261112f";
 
 const STORE = "ftc-opmode-sim-web.blocks2"; // {name, kind, showJava, workspace}
 const MODE_KEY = "ftc-opmode-sim-web.mode";
@@ -36,7 +36,7 @@ export class BlocksMode {
     this.savedState = saved && saved.workspace ? saved : null; // last session (localStorage)
     this.nameInput.value = (this.savedState && this.savedState.name) || "My OpMode";
     this.kindSelect.value = (this.savedState && this.savedState.kind) || "TeleOp";
-    this.showJava.checked = !this.savedState || this.savedState.showJava !== false;
+    this.showJava.checked = false; // Java Code panel starts hidden; students open it with Show Java
 
     for (const b of document.querySelectorAll(".tab-mode")) b.addEventListener("click", () => this.setMode(b.dataset.mode));
     this.ui.querySelector(".bk-save").addEventListener("click", () => this.saveOpMode());
@@ -206,6 +206,8 @@ export class BlocksMode {
   async loadExample(key, label) {
     this.setMode("blocks");
     const ex = await (await fetch("opmodes/blocks/" + key + ".json")).json();
+    this.showJava.checked = false;
+    this.layout();
     this.nameInput.value = ex.name;
     this.kindSelect.value = ex.kind;
     setOpModeName(null, ex.name);
