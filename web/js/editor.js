@@ -66,6 +66,32 @@ function softTab(view) {
   return true;
 }
 
+/** Tints these line numbers red in a code view's gutter (cleared on the next edit). */
+function markErrors(view, lines) {
+  const doc = view.state.doc;
+  const marks = [...new Set(lines)].filter((l) => l <= doc.lines).sort((a, b) => a - b)
+    .map((l) => errorMarker.range(doc.line(l).from));
+  view.dispatch({ effects: setErrors.of(RangeSet.of(marks)) });
+}
+
+/** Read-only code view (Blocks mode's generated Java): same look as the editor. */
+export function readOnlyView(parent) {
+  return new EditorView({
+    parent,
+    state: EditorState.create({
+      doc: "",
+      extensions: [lineNumbers(), errorField, drawSelection(), EditorView.lineWrapping, hangingIndent,
+        EditorState.readOnly.of(true)],
+    }),
+  });
+}
+
+/** Replaces a read-only view's text. */
+export function setViewText(view, text) {
+  if (view.state.doc.toString() === text) return;
+  view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } });
+}
+
 // ---------------------------------------------------------------- editor
 
 /** Public class name, e.g. "FourMotorTest" (file must be named after it). */
@@ -75,9 +101,15 @@ export function className(text) {
 }
 
 export class Editor {
-  constructor(root, { onBuild }) {
+  /**
+   * hooks (all optional): onBuild(); onBlocksExample(key, label); onJavaChanged() after Upload or a Java example;
+   * downloadSource() -> {name, text} to download instead of the Java file (Blocks mode);
+   * label() -> file name to show in the tab and Project Files instead of the Java file's (Blocks mode).
+   */
+  constructor(root, hooks) {
     this.root = root;
-    this.onBuild = onBuild;
+    this.hooks = hooks;
+    this.onBuild = hooks.onBuild;
     this.name = "FourMotorTest.java";
     this.saveTimer = null;
     this.$ = (sel) => root.querySelector(sel);
@@ -112,6 +144,11 @@ export class Editor {
       const label = examples.selectedOptions[0].textContent;
       examples.value = "";
       if (!key) return;
+      if (key.startsWith("blocks:")) {
+        if (this.hooks.onBlocksExample) this.hooks.onBlocksExample(key.slice(7), label);
+        return;
+      }
+      if (this.hooks.onJavaChanged) this.hooks.onJavaChanged();
       this.setFile(await (await fetch("opmodes/" + key + ".java")).text(), true);
       this.message("Loaded example: " + label, "", "Press Build Everything to compile it. Cmd+Z brings back your code.");
       this.view.focus();
@@ -121,7 +158,9 @@ export class Editor {
     upload.addEventListener("change", async () => {
       const f = upload.files[0];
       upload.value = "";
-      if (f) this.setFile(await f.text(), true);
+      if (!f) return;
+      if (this.hooks.onJavaChanged) this.hooks.onJavaChanged();
+      this.setFile(await f.text(), true);
     });
   }
 
@@ -150,7 +189,8 @@ export class Editor {
   updateName() {
     const c = className(this.text);
     if (c) this.name = c + ".java";
-    for (const el of this.root.querySelectorAll(".file-name")) el.textContent = this.name;
+    const label = (this.hooks.label && this.hooks.label()) || this.name;
+    for (const el of this.root.querySelectorAll(".file-name")) el.textContent = label;
   }
 
   autosave() {
@@ -167,10 +207,11 @@ export class Editor {
 
   download() {
     this.save();
-    const url = URL.createObjectURL(new Blob([this.text], { type: "text/x-java" }));
+    const src = (this.hooks.downloadSource && this.hooks.downloadSource()) || { name: this.name, text: this.text };
+    const url = URL.createObjectURL(new Blob([src.text], { type: "text/x-java" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = this.name;
+    a.download = src.name;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -196,7 +237,7 @@ export class Editor {
   }
 
   /** Shows a build result like the Processing editor and tints error lines. */
-  showResult(r) {
+  showResult(r, view = this.view) {
     const lines = [];
     if (r.ok) {
       this.message("Build succeeded!", "ok", 'OpMode "' + r.name + '" is now available on the Driver Station.');
@@ -211,23 +252,20 @@ export class Editor {
         if (p.line > 0) {
           lines.push(p.line);
           div.classList.add("jump");
-          div.addEventListener("click", () => this.jumpTo(p.line));
+          div.addEventListener("click", () => this.jumpTo(p.line, view));
         }
         body.appendChild(div);
       }
     }
-    const doc = this.view.state.doc;
-    const marks = [...new Set(lines)].filter((l) => l <= doc.lines).sort((a, b) => a - b)
-      .map((l) => errorMarker.range(doc.line(l).from));
-    this.view.dispatch({ effects: setErrors.of(RangeSet.of(marks)) });
+    markErrors(view, lines);
   }
 
   /** Click on an error in Messages -> move the cursor to that line. */
-  jumpTo(lineNo) {
-    const doc = this.view.state.doc;
+  jumpTo(lineNo, view = this.view) {
+    const doc = view.state.doc;
     if (lineNo < 1 || lineNo > doc.lines) return;
     const pos = doc.line(lineNo).from;
-    this.view.dispatch({ selection: { anchor: pos }, effects: EditorView.scrollIntoView(pos, { y: "center" }) });
-    this.view.focus();
+    view.dispatch({ selection: { anchor: pos }, effects: EditorView.scrollIntoView(pos, { y: "center" }) });
+    view.focus();
   }
 }

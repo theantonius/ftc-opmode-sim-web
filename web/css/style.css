@@ -42,11 +42,14 @@ body { font-family: Inter, sans-serif; }
 .abs, .topbar, .files, .tabs, .code, .messages { position: absolute; }
 
 .topbar { left: 0; top: 0; width: 680px; height: 36px; background: var(--red); }
-.topbar .blocks { position: absolute; left: 14px; top: 10px; font: 600 13px Inter; color: var(--red-light-text); }
-.topbar .tab-onbot {
-  position: absolute; left: 70px; top: 0; width: 96px; height: 36px; background: var(--red-dark);
-  font: 700 13px Inter; color: #fff; padding: 10px 0 0 12px;
+.topbar .tab-mode {
+  position: absolute; top: 0; height: 36px; border: 0; margin: 0; background: transparent; cursor: pointer;
+  font: 600 13px Inter; color: var(--red-light-text); text-align: left; padding: 0;
 }
+.topbar .tab-blocks { left: 0; width: 70px; padding-left: 14px; }
+.topbar .tab-onbot { left: 70px; width: 96px; padding-left: 12px; }
+.topbar .tab-mode.active { background: var(--red-dark); color: #fff; font-weight: 700; }
+.topbar .tab-mode:not(.active):hover { color: #fff; }
 
 .files { left: 0; top: 36px; width: 150px; height: 684px; background: var(--pane-bg); border-right: 1px solid var(--divider); }
 .files .toolbar { position: absolute; left: 0; top: 0; width: 149px; height: 41px; border-bottom: 1px solid var(--divider); }
@@ -91,6 +94,31 @@ body { font-family: Inter, sans-serif; }
 .code .cm-lineNumbers .cm-gutterElement { width: 34px; min-width: 34px; padding: 0 4px 0 0; text-align: right; }
 .code .cm-gutterElement.cm-error-line { background: var(--error-line-bg); color: var(--red); }
 .code .cm-cursor { border-left-color: var(--code); }
+
+/* Blocks mode */
+.blocks-pane { position: absolute; left: 150px; top: 380px; width: 530px; height: 160px; display: none; border-top: 1px solid var(--divider); }
+.gen-label { position: absolute; left: 0; top: 0; width: 530px; height: 22px; background: var(--tabs-bg);
+  font: 600 11px/22px Inter; color: var(--label-gray); padding-left: 10px; }
+.gen { position: absolute; left: 0; top: 22px; width: 530px; height: 137px; }
+.gen .cm-editor { height: 100%; font: 400 11px "Roboto Mono", monospace; color: var(--code); }
+.gen .cm-editor.cm-focused { outline: none; }
+.gen .cm-scroller { font-family: "Roboto Mono", monospace; line-height: 15px; }
+.gen .cm-content { padding: 4px 0; }
+.gen .cm-gutters { background: var(--gutter-bg); border-right: none; color: var(--line-num); }
+.gen .cm-lineNumbers .cm-gutterElement { width: 34px; min-width: 34px; padding: 0 4px 0 0; text-align: right; }
+.gen .cm-gutterElement.cm-error-line { background: var(--error-line-bg); color: var(--red); }
+#blockly-host { position: fixed; display: none; z-index: 1; --stage-scale: 1; }
+#blockly-host .blocklyTreeLabel, #blockly-host .blocklyToolboxCategoryLabel { font: 600 calc(12px * var(--stage-scale)) Inter, sans-serif; }
+#blockly-host .blocklyTreeRow, #blockly-host .blocklyToolboxCategory { height: auto; line-height: calc(22px * var(--stage-scale)); }
+body.mode-blocks #blockly-host { display: block; }
+body.mode-blocks .blocks-pane { display: block; }
+body.mode-blocks .code { display: none; }
+.convert {
+  position: absolute; left: 236px; top: 133px; width: 136px; height: 32px; border: 1px solid var(--red); border-radius: 4px;
+  background: #fff; color: var(--red); font: 600 12px Inter; cursor: pointer; display: none;
+}
+.convert:hover { background: #FDECEC; }
+body.mode-blocks .convert { display: block; }
 
 .messages { left: 150px; top: 540px; width: 530px; height: 180px; background: var(--messages-bg); border-top: 1px solid var(--divider); }
 .msg-label { position: absolute; left: 12px; top: 9px; font: 600 12px Inter; color: var(--label-gray); }

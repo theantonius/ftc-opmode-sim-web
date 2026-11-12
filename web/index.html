@@ -15,8 +15,8 @@
   <!-- OnBot Java-style editor, 680 x 720 (Figma "Editor", node 3:2) -->
   <div id="editor">
     <div class="topbar">
-      <span class="blocks">Blocks</span>
-      <span class="tab-onbot">OnBotJava</span>
+      <button class="tab-mode tab-blocks" type="button" data-mode="blocks" title="Build your OpMode with blocks">Blocks</button>
+      <button class="tab-mode tab-onbot active" type="button" data-mode="java" title="Write your OpMode in Java">OnBotJava</button>
     </div>
 
     <div class="files">
@@ -39,6 +39,10 @@
         <option value="FourMotorTestCompileError">4 Motor Test (compile error)</option>
         <option value="StuckLoopDemo">Stuck loop: while (true)</option>
         <option value="MecanumPatterns">Mecanum patterns</option>
+        <optgroup label="Blocks">
+          <option value="blocks:DriveForward">Blocks: Drive Forward</option>
+          <option value="blocks:MecanumSquare">Blocks: Mecanum Square</option>
+        </optgroup>
       </select>
 
       <div class="file-actions">
@@ -53,10 +57,17 @@
 
     <div class="code"></div>
 
+    <!-- Blocks mode: the Blockly workspace sits above this area (#blockly-host); generated Java below it -->
+    <div class="blocks-pane">
+      <div class="gen-label">Generated Java (read-only)</div>
+      <div class="gen"></div>
+    </div>
+
     <div class="messages">
       <div class="msg-label">Messages</div>
       <div class="msg-title"></div>
       <div class="msg-body"></div>
+      <button class="convert" type="button" title="Copy the generated Java into OnBotJava mode to keep editing it">Convert to Java</button>
       <button class="build" type="button" title="Save and compile">
         <img src="assets/icons/wrench.svg" alt=""><span class="build-label">Build Everything</span>
       </button>
@@ -66,6 +77,8 @@
   <!-- Robot view (top) + Driver Station (bottom), 600 x 720, drawn with p5.js -->
   <div id="sim"></div>
 </div>
+<!-- Blockly lives outside the scaled stage (it doesn't support CSS-scaled parents); main.js keeps it over the code area -->
+<div id="blockly-host"></div>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
