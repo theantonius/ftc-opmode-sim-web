@@ -1,10 +1,10 @@
 // FTC OpMode Sim (web): p5.js sketch (instance mode) + OnBot Java-style editor + Java sim on CheerpJ.
-import * as java from "./java.js";
-import * as D from "./draw.js";
-import { Editor } from "./editor.js";
-import { BlocksMode } from "./blocksMode.js";
-import { RobotView } from "./robotView.js";
-import { DriverStation } from "./driverStation.js";
+import * as java from "./java.js?v=20261112e";
+import * as D from "./draw.js?v=20261112e";
+import { Editor } from "./editor.js?v=20261112e";
+import { BlocksMode } from "./blocksMode.js?v=20261112e";
+import { RobotView } from "./robotView.js?v=20261112e";
+import { DriverStation } from "./driverStation.js?v=20261112e";
 
 const W = 1280, H = 720;
 const SIM_X = 680, DS_Y = 360;
@@ -28,7 +28,7 @@ fit();
 
 // ---------------------------------------------------------------- build
 
-let opName = null, opKind = null; // the OpMode on the Driver Station (null before a build)
+let built = null; // {name, kind} from the last good build: it shows up in the Driver Station's OpMode list
 
 const editor = new Editor(document.getElementById("editor"), {
   onBuild: build,
@@ -38,6 +38,7 @@ const editor = new Editor(document.getElementById("editor"), {
   downloadSource: () => blocks && blocks.downloadSource(),
 });
 blocks = new BlocksMode(editor, stage);
+window.__sim = { java, blocks, ds: () => ds }; // for automated checks in the browser console
 blocks.place(scale);
 
 async function build() {
@@ -58,9 +59,10 @@ async function build() {
     const r = await java.build(fileName, source);
     editor.showResult(r, view);
     if (r.ok) {
-      opName = r.name;
-      opKind = r.kind;
+      built = { name: r.name, kind: r.kind };
+      if (ds) ds.onBuilt(built);
     }
+    if (blocks.mode === "blocks") blocks.saved(r.ok);
   } catch (e) {
     editor.message("Build failed", "err", String(e));
   } finally {
@@ -83,17 +85,15 @@ new p5((p) => {
     const c = p.canvas;
     c.addEventListener("mousemove", (e) => {
       const [x, y] = panelXY(e);
-      ds.hover = ds.overButton(java.snap, opName, x, y);
-      c.style.cursor = ds.hover ? "pointer" : "default";
+      c.style.cursor = ds.mouseMove(java.snap, built, x, y) ? "pointer" : "default";
     });
-    c.addEventListener("mouseleave", () => { ds.hover = false; });
+    c.addEventListener("mouseleave", () => { ds.hover = false; ds.hoverTri = null; ds.menuHover = -1; });
     c.addEventListener("click", (e) => {
       const [x, y] = panelXY(e);
-      if (!ds.overButton(java.snap, opName, x, y)) return;
-      const a = ds.action(java.snap);
+      const a = y >= 0 ? ds.click(java.snap, built, x, y) : (ds.menu = null);
       if (a === "init") java.init();
       else if (a === "play") java.play();
-      else java.stop();
+      else if (a === "stop") java.stop();
     });
     c.addEventListener("wheel", (e) => {
       const [x, y] = panelXY(e);
@@ -109,7 +109,7 @@ new p5((p) => {
     p.push();
     robot.paint(snap);
     p.translate(0, DS_Y);
-    ds.paint(snap, opName, opKind);
+    ds.paint(snap, built);
     p.pop();
   };
 });

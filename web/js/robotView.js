@@ -1,6 +1,6 @@
 // Top-down robot view, 600 x 360. Port of RobotView.java (Figma "Robot View", node 6:2).
 // Wheels-up bench test: wheels spin, robot stays put.
-import * as D from "./draw.js";
+import * as D from "./draw.js?v=20261112e";
 
 const BG = "#2B2F33";
 const HEADER = "#3A4046";
